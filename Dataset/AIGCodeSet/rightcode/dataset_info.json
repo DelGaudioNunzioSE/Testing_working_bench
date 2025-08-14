@@ -1,0 +1,96 @@
+{
+  "builder_name": "csv",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "aig_code_set",
+  "dataset_size": 529849530,
+  "description": "",
+  "download_checksums": {
+    "hf://datasets/basakdemirok/AIGCodeSet@6e6cac83a64f8f6a5bd17dbb9d52cb7499efe86c/data/all_data_with_ada_embeddings_will_be_splitted_into_train_test_set.csv": {
+      "num_bytes": 264569430,
+      "checksum": null
+    }
+  },
+  "download_size": 264569430,
+  "features": {
+    "problem_id": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "submission_id": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "status_in_folder": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "LLM": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "code": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "ada_embedding": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "label": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "lines": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "code_lines": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "comments": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "functions": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "blank_lines": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "cleared_code": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "idx": {
+      "dtype": "int64",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 794418960,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 264924765,
+      "num_examples": 7583,
+      "dataset_name": "aig_code_set"
+    },
+    "test": {
+      "name": "test",
+      "num_bytes": 264924765,
+      "num_examples": 7583,
+      "dataset_name": "aig_code_set"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

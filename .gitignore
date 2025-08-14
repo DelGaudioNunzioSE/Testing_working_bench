@@ -1,0 +1,12 @@
+__pycache__
+
+*.zip
+backup/
+!Methods/utils/
+
+*.bin
+
+#*.arrow
+#*.json
+#*jsonl
+#*.csv

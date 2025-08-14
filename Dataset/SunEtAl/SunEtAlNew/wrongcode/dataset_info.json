@@ -1,0 +1,54 @@
+{
+  "builder_name": "json",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "json",
+  "dataset_size": 892490,
+  "description": "",
+  "download_checksums": {
+    "C:/Users/tanat/OneDrive/Desktop/Git/testing_working_bench/./Dataset/SunEtAl/SunEtAl.jsonl": {
+      "num_bytes": 983470,
+      "checksum": null
+    }
+  },
+  "download_size": 983470,
+  "features": {
+    "Source Name": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "code": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "instruction": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "test_result.passed": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "cleared_code": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 1875960,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 892490,
+      "num_examples": 272,
+      "dataset_name": "json"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

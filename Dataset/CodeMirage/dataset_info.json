@@ -1,0 +1,64 @@
+{
+  "builder_name": "csv",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "code_mirage",
+  "dataset_size": 699601639,
+  "description": "",
+  "download_checksums": {
+    "hf://datasets/HanxiGuo/CodeMirage@174c25ffa9e9f218f8526d403b3aba9631dcfc43/train.csv": {
+      "num_bytes": 493199393,
+      "checksum": null
+    },
+    "hf://datasets/HanxiGuo/CodeMirage@174c25ffa9e9f218f8526d403b3aba9631dcfc43/test.csv": {
+      "num_bytes": 210549770,
+      "checksum": null
+    }
+  },
+  "download_size": 703749163,
+  "features": {
+    "code": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "language": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "source": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "variant": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "cleared_code": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 1403350802,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 490316067,
+      "num_examples": 146992,
+      "dataset_name": "code_mirage"
+    },
+    "test": {
+      "name": "test",
+      "num_bytes": 209285572,
+      "num_examples": 62996,
+      "dataset_name": "code_mirage"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}
