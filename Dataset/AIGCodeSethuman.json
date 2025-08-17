@@ -1,0 +1,749 @@
+[
+  [
+    "import sys\nimport numpy as np\nn, t = map(int, input().split())\nknapsack = np.zeros(t, dtype=np.int64)\ncuisines = [tuple(map(int, line.split())) for line in sys.stdin]\ncuisines.sort()\ntmp_ans = 0\nfor a, b in cuisines:\n    tmp_ans = max(tmp_ans, knapsack.max() + b)\n    knapsack[a:] = np.maximum(knapsack[a:], knapsack[:-a] + b)\nprint(max(tmp_ans, knapsack.max()))\n"
+  ],
+  [
+    "import sys\ndef solve(N: int, s: \"List[str]\"):\n    x = 0\n    a = 0\n    b = 0\n    for i in s:\n        if(i[0] == 'B' and i[-1] == 'A'):\n            x += 1\n        elif(i[-1] == 'A'):\n            a += 1\n        elif(i[0] == 'B'):\n            b += 1\n    ans1 = max(0,x-1) + min(a,b)\n    if((a > 0 or b >0) and x > 0):\n        ans1 += 1\n    ans1 = max(0,x-1) \n    if(a == b):\n        ans1 += min(a,b)\n        if((a > 0 or b > 0) and x != 0):\n            ans1 += 1\n    else:\n        if(x == 0):\n            ans1 += min(a,b)\n        elif(a > 0 or b > 0):\n            ans1 += min(a,b)+1 \n    ans2 = 0\n    for i in s:\n        ans2 += i.count('AB')\n    print(ans1+ans2)\n    return\ndef main():\n    def iterate_tokens():\n        for line in sys.stdin:\n            for word in line.split():\n                yield word\n    tokens = iterate_tokens()\n    N = int(next(tokens))  \n    s = [ next(tokens) for _ in range(N) ]  \n    solve(N, s)\nif __name__ == '__main__':\n    main()\n"
+  ],
+  [
+    "A, V = input().split()\nA = int(A)\nV = int(V)\nB, W = input().split()\nB = int(B)\nW = int(W)\nT = int(input())\nrel_v = V - W\nif rel_v < 0:\n  print(\"NO\")\nelse:\n  if d < (rel_v * T):\n    print(\"NO\")\n  else:\n    print(\"YES\")\n"
+  ],
+  [
+    "import numpy as np\nimport numba\nfrom numba import njit, b1, i4, i8, f8\n@njit((i8, i8, i8, i8[:,:]), cache=True)\ndef solve(R,C,K,item):\n  dp = np.zeros((C+1,4), dtype=np.int64)\n  for i in range(1,R+1):\n    new_dp = np.zeros((C+1,4), dtype=np.int64)\n    for k in range(4):\n      new_dp[:,0] = np.maximum(new_dp[:,0], dp[:,k])\n    dp = new_dp\n    for j in range(1,C+1):\n      for k in range(4):\n        new_dp[j][k] = np.maximum(new_dp[j][k],new_dp[j-1][k])\n      for k in range(2,-1,-1):\n        dp[j,k+1] = np.maximum(dp[j,k+1],dp[j,k]+item[i-1][j-1])\n  ans = dp[-1].max()\n  return ans\nR, C, K = map(int, input().split())\nitem = np.zeros((R,C), dtype=np.int64)\nfor i in range(K):\n  r,c,v = map(int, input().split())\n  item[r-1,c-1] = v\nprint(solve(R,C,K,item))\n"
+  ],
+  [
+    "import sys\ninput=sys.stdin.readline\nK=int(input())\nS=input()\nM=len(S)\nN=K+M\nmod=10**9+7\nans=pow(26,N,mod)\nclass Data():\n    def __init__(self):\n        self.power=1\n        self.rev=1     \nclass Combi():\n    def __init__(self,N,mod):\n        self.lists=[Data() for _ in range(N+1)]\n        self.mod=mod  \n        for i in range(2,N+1):\n            self.lists[i].power=((self.lists[i-1].power)*i)%self.mod\n        self.lists[N].rev=pow(self.lists[N].power,self.mod-2,self.mod)\n        for j in range(N,0,-1):\n            self.lists[j-1].rev=((self.lists[j].rev)*j)%self.mod\n    def combi(self,K,R):\n        if K<R:\n            return 0\n        else:\n            return ((self.lists[K].power)*(self.lists[K-R].rev)*(self.lists[R].rev))%self.mod\nc=Combi(2*10**6,mod)\nfor i in range(M):\n    ans-=c.combi(N,i)*pow(25,N-i,mod)\n    ans%=mod\nprint(ans)"
+  ],
+  [
+    "def primes(n):\n    is_prime = [True]*(n+1)\n    is_prime[0] = False\n    is_prime[1] = False\n    for i in range(2,int(n**(0.5)+1)):\n        if not is_prime[i]:\n            continue\n        for j in range(i*2,n+1,i):\n            is_prime[j] = False\n    return [i for i in range(n+1) if is_prime[i]], is_prime\nli_p, is_prime = primes(10**5+1)\nprint(li_p)\nfor i in li_p:\n    if  is_prime[(i+1)//2]:\n        is_prime[i] = False\nres = [0] * (10**5+1)\nfor i in range(10**5+1):\n    if i == 0:\n        continue\n    if is_prime[i]:\n        res[i] = res[i-1] + 1\n    else:\n        res[i] = res[i-1]\nq = int(input())\nfor _ in range(q):\n    l, r = map(int, input().split())\n    if l>0:\n        print(res[r] - res[l-1])\n    else:\n        print(res[r])\n"
+  ],
+  [
+    "n , k = map(int,input().split())\nhoge = [list(map(int,input().split())) for _ in range(n)]\nhoge.sort()\nsushi = 0\nfor i in range(n):\n  sushi += hoge[i][1]\n  if sushi >= k:\n    print(hoge[i][0])\n    break"
+  ],
+  [
+    "import itertools as it\nimport numpy as np\nfrom copy import deepcopy\ndef main():\n    inputs = [input() for _ in range(2)]\n    N = int(inputs[0])\n    ingredients = [float(i) for i in inputs[1].split(' ')]\n    combinations = [list(it.combinations(range(l), 2)) for l in range(2,len(ingredients)+1)]\n    combinations.reverse()\n    indexes = np.empty((np.prod([len(c) for c in combinations]), len(combinations)), dtype='i')\n    for i, combination in enumerate(combinations):\n        indexes[:,i] = np.array(list(range(len(combination))) * int(len(indexes)/len(combination)))\n    best_ingredient = 0.\n    for index in indexes:\n        routs = []\n        curr_ingredients = deepcopy(ingredients)\n        for n,i in enumerate(index):\n            routs.append(combinations[n][i])\n        for rout in routs:\n            new_ingredient = (curr_ingredients.pop(rout[1]) +\n                            curr_ingredients.pop(rout[0])) / 2.\n            curr_ingredients.append(new_ingredient)\n        if best_ingredient < curr_ingredients[0]:\n            best_ingredient = curr_ingredients[0]\n    print(best_ingredient)\nif __name__ == '__main__':\n    main()"
+  ],
+  [
+    "nm = input()\nn, m = nm.split()\nn = int(n)\nm = int(m)\narr = [[] for i in range(n)]\nfor i in range(m):\n\tab = input()\n\ta, b = ab.split()\n\ta = int(a)\n\tb = int(b)\n\tarr[a-1].append(b)\t\ncnt = 0\t\nsting = 0\nfor i,isl in enumerate(arr):\n\tsting = isl[0]\n\tfor j in arr[i:sting]:\n\t\tif (i == sting):\n\t\t\tcnt += 1\nprint(cnt)"
+  ],
+  [
+    "import bisect\nimport os\nfrom collections import Counter, deque\nfrom fractions import gcd\nfrom functools import lru_cache\nfrom functools import reduce\nimport functools\nimport heapq\nimport itertools\nimport math\nimport numpy as np\nimport re\nimport sys\nif os.getenv(\"LOCAL\"):\n    sys.stdin = open(\"_in.txt\", \"r\")\nsys.setrecursionlimit(2147483647)\nINF = float(\"inf\")\nX, Y, Z = list(map(int, sys.stdin.readline().split()))\nX -= Z\nX //= (Y + Z)\nprint(X)\n"
+  ],
+  [
+    "S=input()\ns=set(S)\nif (\"N\" in s and \"S\" not in s) or\n\t(\"S\" in s and \"N\" not in s) or\n\t(\"E\" in s and \"W\" not in s) or\n    (\"W\" in s and \"E\" not in s):\n      print(\"No\")\nelse:\n  print(\"Yes\")"
+  ],
+  [
+    "n = int(input())\nc = 0\nfor i in range(n):\n    a,b = map(int,input().split())\n    if b == 'JPY':\n        c += a\n    else:\n        c +=380000*a\nprint(c)"
+  ],
+  [
+    "N, U, V = map(int, input().split())\nG = [set() for _ in range(N+1)]\nfor _ in range(N-1):\n    a, b = map(int, input().split())\n    G[a].add(b)\n    G[b].add(a)\nstack = [V]\npath = []\nvs = set([V])\nG2 = [set() for _ in range(N+1)]\ndepth = [0] * (N+1)\nwhile stack:\n    v = stack.pop()\n    if v > 0:\n        path.append(v)\n        if v == U:\n            tmp = len(path)//2\n            ss = path[-tmp]\n        for u in G[v]:\n            if u in vs:\n                continue\n            depth[u] = depth[v] + 1\n            G2[v].add(u)\n            vs.add(u)\n            stack += [-v, u]\n    else:\n        path.pop()\nstack = [ss]\nvs = set([ss])\nwhile stack:\n    v = stack.pop()\n    for u in G2[v]:\n        if u in vs:\n            continue\n        vs.add(u)\n        stack.append(u)\nx = 0\nfor v in vs:\n    x = max(depth[v], x)\nprint(x-1)\n"
+  ],
+  [
+    "import itertools\nimport numpy as np\nimport sys\nN, M, X = map(int, input().split())\nC = []\nA = []\nALL = []\nfor n in range(N):\n  Y = list(map(int, input().split()))\n  ALL.append(Y)\n  C.append(Y[0])\n  A.append(Y[1:])\nALL = np.sort(ALL, axis=0)\nok_index = []\nfor n in range(N):\n  for i in itertools.permutations(ALL, r=n+1):\n      if n > 0:\n        this_ar = np.sum(np.array(i), axis=0)\n      else:\n        this_ar = np.array(i)[0]\n      if np.all(this_ar[1:]>=X):\n        ok_index.append(this_ar[0])\n  if len(ok_index) > 0:\n    print(np.min(ok_index))\n    sys.exit()\nif len(ok_index)==0:\n  print(-1)\nelse:\n  print(np.min(ok_index))"
+  ],
+  [
+    "a,b = map(int,input().split())\nk = 50\nm = []\nfor i in range(k):\n    m.append([\"\nfor i in range(k):\n    m.append([\".\"]*2*k)\na , b -= 1\nfor i in range(0,k-1,2):\n    for j in range(0,2*k,2):\n        if a > 0:\n            m[i][j] = \".\"\n            a -= 1 \nfor i in range(k+1,2*k,2):\n    for j in range(0,2*k,2):\n        if b > 0:\n            m[i][j] = \"\n            b -= 1  \nprint(2*k,2*k)\nfor i in m:\n    print(\"\".join[i])"
+  ],
+  [
+    "s=list(input())\nif \"a\" and \"b\" and \"c\" in s:\n    print(\"Yes\")\nelse:\n    print(\"No\")\n"
+  ],
+  [
+    "import math\nN = input()\nM = 2*float(N)*math.pi\nprint(M)\n"
+  ],
+  [
+    "import bisect\nN=int(input())\nL=list(map(int,input().split()))\nL.sort()\nans=0\nprint(L)\nfor i in range (N):\n    for j in range (i+1,N):\n        if L[i]==L[j]:\n            pass\n        else:\n            ab=L[i]+L[j]\n            c=bisect.bisect_left(L,ab)\n            bequalc=bisect.bisect_right(L,L[j])\n            ans+=c-(bequalc)\nprint(ans)"
+  ],
+  [
+    "import sys\nreadline = sys.stdin.readline\nK = int(readline())\nS = readline().rstrip()\nS = len(S)\nN = K + S\nDIV = 10 ** 9 + 7\nn = (10 ** 6) * 2\ng1 = [1] * 2 + [0] * (n - 2) \ng2 = [1] * 2 + [0] * (n - 2) \ninverse = [0, 1] + [0] * (n - 2) \nfor i in range(2, n):\n  g1[i] = (g1[i - 1] * i ) % DIV\n  inverse[i] = (-inverse[DIV % i] * (DIV // i)) % DIV\n  g2[i] = (g2[i - 1] * inverse[i]) % DIV\ndef nCr(n, r, DIV):\n  if ( r<0 or r>n ):\n      return 0\n  r = min(r, n-r)\n  return g1[n] * g2[r] * g2[n-r] % DIV\nans = 0\nfor xpos in range(S, N + 1):\n  pat = nCr(xpos - 1, S - 1, DIV)\n  pat *= pow(25, xpos - S, DIV)\n  pat %= DIV\n  pat *= pow(26, N - xpos, DIV)\n  pat %= DIV\n  ans += pat\n  ans %= DIV\nprint(ans)\n"
+  ],
+  [
+    "N = int(input())\nL = list(map(int,input().split()))\ns = sum(L)\np = 0\nfor a in L:\n p += a*a\nans=(s*s-p)/2\nprint(ans)"
+  ],
+  [
+    "N,M = map(int,input().split())\ndict_a = {}\nlist_a =[]\ndef seiti(arg_num):\n    if len(str(arg_num))==6:\n        pass\n    else :\n        ret_num = str(arg_num).zfill(6)\n    return ret_num\nfor i in range(1,M+1):\n    P,Y =map(int,input().split())\n    dict_b = {}\n    dict_b = dict(id = i,ken = P,year = Y)\n    list_a.append(dict_b)\nlist_a.sort(key=lambda x: x['year'])\nfor j in range(1,N+1):\n    cnt =1\n    for k in list_a:\n        if  k.get('ken') ==j:\n            k['shi_id'] =cnt\n            cnt +=1\n        else :\n            pass\nlist_a.sort(key=lambda x: x['id'])\nfor l in list_a:\n    aaa = seiti(l.get('ken'))\n    bbb = seiti(l.get('shi_id'))\n    print(aaa+bbb)\n"
+  ],
+  [
+    "x = int(input())\ny = int(input())\nif x % y  == 0 or x > 10**18:\n\tprint(-1)\nelse:\n\tprint(x)\n"
+  ],
+  [
+    "import bisect\nN = int(input())\nA = [int(input()) for i in range(N)]\ndp = [A[0]]\nfor i in A[1:]:\n    if i > dp[-1]:\n        dp.append(i)\n    else:\n        dp[bisect.bisect_right(dp,i)] = i     \nprint(N-len(dp)+1)"
+  ],
+  [
+    "import math \nN = int(input())\nA = list(map(int, input().split()))\nm = [0] * int(1e6+1)\nfor i in range(N):\n    m[A[i]] = 1\npw = True\nfor p in range(2, N+1):\n    c = 0\n    for i in range(p, len(m), p):\n        c += m[i]\n    if c > 1:\n        pw = False\n        break\nif pw:\n    print('pairwise coprime')\n    exit()\nd = A[0]\nfor i in range(N):\n    d = math.gcd(d, A[i])\nif d == 1:\n    print('setwise coprime')\nelse:\n    print('not coprime')\n"
+  ],
+  [
+    "s = input()\nMOD = 10 ** 9 + 7\nn = len(s)\ndp1 = [0] * (n + 1)\ndp2 = [0] * (n + 1)\ndp1[0] = 1\nfor i in range(n):\n    if s[i] == '1':\n        dp1[i + 1] += dp1[i] * 2\n        dp1[i + 1] %= MOD\n        dp2[i + 1] += dp1[i] + dp2[i] * 3\n        dp2[i + 1] %= MOD\n    else:\n        dp1[i + 1] += dp1[i]\n        dp1[i + 1] %= MOD\n        dp2[i + 1] += dp2[i] * 3\n        dp2[i + 1] %= MOD\nprint((dp1[n] + dp2[n]) % MOD)\n"
+  ],
+  [
+    "import sys\nfrom math import sqrt\nfrom collections import deque\ndef input(): return sys.stdin.readline().strip()\ndef list2d(a, b, c): return [[c] * b for i in range(a)]\ndef list3d(a, b, c, d): return [[[d] * c for j in range(b)] for i in range(a)]\ndef ceil(x, y=1): return int(-(-x // y))\ndef INT(): return int(input())\ndef MAP(): return map(int, input().split())\ndef LIST(): return list(map(int, input().split()))\ndef Yes(): print('Yes')\ndef No(): print('No')\ndef YES(): print('YES')\ndef NO(): print('NO')\nsys.setrecursionlimit(10 ** 9)\nINF = float('inf')\nMOD = 10 ** 9 + 7\nN,K=MAP()\nA=LIST()\nsm=sum(A)\ndef divisor_set(N: int) -> set:\n    s = {1, N}\n    for i in range(2, int(sqrt(N))+1):\n        if N % i == 0:\n            s.add(i)\n            s.add(N // i)\n    return s\ndivs=sorted(divisor_set(sm), reverse=True)\nfor div in divs:\n    B=[]\n    for i in range(N):\n        if A[i]%div!=0:\n            B.append(A[i]%div)\n    B.sort()\n    B=deque(B)\n    cnt=0\n    while len(B):\n        dista=B[0]%div\n        distb=div-B[-1]%div\n        if dista>distb:\n            B[0]-=distb\n            B.pop()\n            cnt+=distb\n        elif dista<distb:\n            B[-1]-=dista\n            B.popleft()\n            cnt+=dista\n        elif dista==distb:\n            B.pop()\n            B.popleft()\n            cnt+=dista\n    if cnt<=K:\n        print(div)\n        exit()\n"
+  ],
+  [
+    "s = input()\nl = (len(s) - len(s) % 2) / 2\nfor i in range(l):\n  if s[i] != s[len(s) - i]:\n    count += 1\nprint(count)\n"
+  ],
+  [
+    "a,b,c = input().strip().split()\n"
+  ],
+  [
+    "import math\nimport itertools\nimport heapq\nfrom sys import stdin, stdout, setrecursionlimit\nfrom bisect import bisect, bisect_left, bisect_right\nfrom collections import defaultdict, deque\ndef LM(t, r): return list(map(t, r))\ndef R(): return stdin.readline()\ndef RS(): return R().split()\ndef I(): return int(R())\ndef F(): return float(R())\ndef LI(): return LM(int,RS())\ndef LF(): return LM(float,RS())\ndef ONE_SL(): return list(input())\ndef ONE_IL(): return LM(int, ONE_SL())\ndef ALL_I(): return map(int, stdin)\ndef ALL_IL(): return LM(int,stdin)\ndef ap(f): return f.append\ndef pll(li): print('\\n'.join(LM(str,li)))\ndef pljoin(li, s): print(s.join(li))\ndef maxAbsIndex(arr): return max(range(len(arr)), key=lambda x: abs(arr[x]))\ndef main():\n\tN = I()\n\tA = LI()\n\tmax_A = max(A)\n\tmin_A = min(A)\n\tif min_A<0:\n\t\tif abs(max_A) >= abs(min_A):\n\t\t\tA = [i+max_A for i in A]\n\t\telse:\n\t\t\tA = [i+min_A for i in A]\n\tfor i in range(N-1):\n\t\tA[i+1]+=A[i]\nif __name__ == '__main__':\n\tmain()"
+  ],
+  [
+    "n = int(input())\nred_point_list = [[int(j) for j in input().split()] for i in range(n)]\nblue_point_list = [[int(j) for j in input().split()] for i in range(n)]\ncount = 0\nmemo = []\ndef func(red_points, blue_points, count):\n    if len(red_points) == 0:\n        memo.append(count)\n    else:\n        a = red_points[0][0]\n        b = red_points[0][1]\n        x = 0\n        for i, p in enumerate(blue_points):\n            if a < p[0] and b < p[1]:\n                new_red_points = red_points[1:]\n                new_blue_points = blue_points.copy()\n                new_blue_points.pop(i)\n                new_count = count + 1\n                x += 1\n                func(new_red_points, new_blue_points, new_count)\n        if x == 0:\n            new_red_points = red_points[1:]\n            new_blue_points = blue_points.copy()\n            func(new_red_points, new_blue_points, count)\nfunc(red_point_list, blue_point_list, count)\nprint(max(memo))\n"
+  ],
+  [
+    "from sys import stdin\nn=int(stdin.readline())\ndp=[0]*3\nfor i in range(n):\n    before=[0,0,0]\n    l=list(map(int,stdin.readline().split()))\n    for i in range(3):\n        before[i]=max(dp[(i+1)%3],dp[(i+2)%3])+l[i]\n    dp=before\nprint(max(dp))\n"
+  ],
+  [
+    "N = int(input())\ns = input()\nl = 0\nr = len(s) - 1\ncount = 0\nwhile True:\n\tflg = False\n\tfor i in range(l, r):\n\t\tif (s[i] == 'W'):\n\t\t\tl = i + 1\n\t\t\tflg = True\n\t\t\tbreak\n\tfor j in range(r, l - 1, -1):\n\t\tif (s[j] == 'R'):\n\t\t\tr = j - 1\n\t\t\tif flg:\n\t\t\t\tcount += 1\n\t\t\tbreak\n\telse:\n\t\tbreak\n\tif flg == False:\n\t\tbreak\nprint(count)\n"
+  ],
+  [
+    "n,m=map(int,input().split())\nkey=0\nflag=False\na=[int(input()) for i in range(m)]\nfor i in range(m-1):\n    if a[i+1]-a[i]==1:\n        flag=True\ndef fb(num):\n    a, b = 1, 0\n    for _ in range(num+1):\n        a, b = a + b, a\n    return b\nif m!=0:\n    key=fb(a[0]-1)\nif key==0: key=1\nfor i in range(m-1):\n    key*=fb(a[i+1]-a[i]-2)\nif m!=0:\n    key*=fb(n-a[len(a)-1]-1)\nif flag==True:\n    print(0)\nelif m==0:\n    print(fb(n))\nelse:\n    print(key%1000000007)\n"
+  ],
+  [
+    "MOD = 1000000007\nn, k = [int(x) for x in input().split()]\nd = [0] * (k + 1)\nfor i in range(0, k + 1):\n    d[i] = pow(k // i, n, MOD)\nfor i in range(k, 0, -1):  \n    for j in range(i * 2, k + 1, i):  \n        d[i] -= d[j]\n        d[i] %= MOD\nans = 0\nfor i, item in enumerate(d):\n    ans += i * item\n    ans %= MOD\nprint(ans)\n"
+  ],
+  [
+    "import math\nN=int(input())\nG=[[] for i in range(N)]\nfor _ in range(N-1):\n\ta,b=map(lambda x:int(x)-1,input().split())\n\tG[a].append(b)\n\tG[b].append(a)\ndepth=[[0]*N for i in range(2)]\ndef dfs(d, i, p, k=0):\n\tfor t in G[i]:\n\t\tif t!=p:\n\t\t\tdepth[k][t]=d\n\t\t\tdfs(d+1, t, i,k)\ndfs(1,0,-1, 0)\ndfs(1,N-1,-1, 1)\ncnt=0\nfor i,j in zip(depth[0], depth[1]):\n\tif i<=j:\n\t\tcnt+=1\nprint('Fennec' if cnt*2>N else 'Snuke')"
+  ],
+  [
+    "s = input()\nx, y = list(map(int, input().split()))\nX = []\nY = []\nn = 0\nfor i in s:\n    if i == 'T':\n        (X if len(X) == len(Y) else Y).append(n)\n        n = 0\n    else:\n        n += 1\n(X if len(X) == len(Y) else Y).append(n)\ns = X[0]\nt = 0\nX = sorted(X[1:], reverse=True)\nY = sorted(Y, reverse=True)\nfor i in X:\n    s += i * (-1 if s > x else 1)\nfor i in Y:\n    t += i * (-1 if t > y else 1)\nif s == x and t == y:\n    print ('Yes')\nelse:\n    print ('No')\n"
+  ],
+  [
+    "A,B=map(int,input().split())\nif (A+B) % 2 == 0:\n  K = (A+B)/2\nelse:\n  K =\"IMPOSSIBLE\"\nprint(K)"
+  ],
+  [
+    "N=int(input())\n*V,=map(int,input().split())\nimport collections import Counter\nc1=Counter(V[0::2]).most_common()+[(0,0)]\nc2=Counter(V[1::2]).most_common()+[(0,0)]\nif c1[0][0]!=c2[0][0]:\n    print(N-c1[0][1]-c2[0][1])\nelse:\n    print(min(N-c1[0][1]-c2[1][1],N-c1[1][1]-c2[0][1]))"
+  ],
+  [
+    "n,C = map(int, input().split())\nstc=[list(map(int,input().split())) for _ in range(n)]\ntime = [0]*(10**5+1)\nfor s,t,c in stc:\n    time[s]+=1\n    time[t+1]-=1\nans = time[0]\nfor i in range(10**5):\n    time[i+1] += time[i]\n    if time[i+1] > ans:\n        ans = time[i+1]\nprint(ans)"
+  ],
+  [
+    "def pin(type=int):\n    return map(type,input().split())\nN,K =pin()\nR,S,P =pin()\nT, =pin(str)\nwinT = []\nwin = \"rpsr\"\nfor i in range(N):\n    for j in range(3):\n        if T[i] ==win[j]:\n            winT.append(win[j+1])\nprint(winT)\nprint(K,\"個前を使えない\")\nfor i in range (N-K):\n    if winT[i] == winT[i+K]:\n        winT[i+K] = \"0\"\n        print(i)\nprint(winT)\nans=0\nfor i in range(N):\n    if winT[i]==\"p\":\n        ans+=P\n    elif winT[i]==\"r\":\n        ans+=R\n    elif winT[i]==\"s\":\n        ans+=S\nprint(ans)"
+  ],
+  [
+    "from collections import deque\nk,t = map(int, input().split())\na = list(map(int, input().split()))\na = sorted(a)\na = deque(a)\nlength = len(a)\nif length ==1:\n    print(sum(a)-1)\n    exit()\nwhile length > 1:\n    mx = a.pop()\n    mn = a.popleft()\n    mx -= 1\n    mn -= 1\n    if mx != 0:\n        a.append(mx)\n    else:\n        length -=1\n    if mn != 0:\n        a.appendleft(mn)\n    else:\n        length-=1    \nprint(sum(a)-1)     \n"
+  ],
+  [
+    "N, A, B = map(int, raw_input().split())\ndef fact(n, c):\n    if c == 0:  return 1\n    return n * fact(n - 1, c - 1)\nif B < A:\n    print(0)\nelif N == 1:\n    if 1 < (B - A):\n        print(0)\n    else:\n        print(1)\nelse:\n    result1 = fact(B - A + 2, N - 2) / fact(N - 2, N - 2)\n    minimum = A * (N - 1) + B\n    maximum = A + B * (N - 1)\n    result2 = maximum - minimum + 1\n    result = min(result1, result2)\n    print(result)"
+  ],
+  [
+    "N, Y=(int(x) for x in input().split())\nA = Y // 10000 \nB = Y // 5000\nC = Y // 1000\nroop = 0\nfor i in range(A+1):\n    if roop == 1:\n        break\n    for j in range(B+1):\n        if i + j > N:\n            break\n        c = N - i - j \n        if 10*i + 5*j + c == Y//1000 and c >= 0:\n            a = i\n            b = j\n            roop = 1\n            break\nif roop == 1:\n    print(\"{0} {1} {2}\".format(a, b, c))\nelse:\n    a, b, c = -1, -1, -1\n    print(\"{0} {1} {2}\".format(a, b, c))"
+  ],
+  [
+    "import collections\nM=10**9+7\nN=int(input())\nS=list(input())\nA=list(collections.Counter(S).values())\nans=1\nfor i in A:\n    if i==1:\n        ans*=2%M\n    else:\n        ans*=i+1%M\nprint(ans-1)"
+  ],
+  [
+    "import sys\nimport math\nfrom collections import defaultdict\nsys.setrecursionlimit(10**7)\ndef input():\n    return sys.stdin.readline()[:-1]\nmod = 10**9 + 7\ndef I(): return int(input())\ndef II(): return map(int, input().split())\ndef III(): return list(map(int, input().split()))\ndef Line(N,num):\n    if N<=0:\n        return [[]]*num\n    elif num==1:\n        return [I() for _ in range(N)]\n    else:\n        read_all = [tuple(II()) for _ in range(N)]\n        return map(list, zip(*read_all))\ndef solve(n):\n    ans = 0\n    for i in range(1, int(n**0.5)+1):\n        if n%i == 0:\n            if n//i > i+1:\n                ans += n//i-1\n    return ans\nN = I()\nprint(solve(N))"
+  ],
+  [
+    "x=input()\nX=int(x)\nif (X>40||X<-40):\n  return 0\nelif(X=>30&&X=<40):\n  print('Yes')\nelif(X=>-40&&X<30):\n  print('No')\n"
+  ],
+  [
+    "import math\nimport collections\nimport heapq\nfrom collections import defaultdict\nimport sys\ninput = sys.stdin.readline\nsys.setrecursionlimit(10 ** 7)\ndef main():\n    n = int(input())\n    maxv = n*(n-1)//2\n    a = [list(map(int, input().split())) for i in range(n)]\n    for i in range(n):\n        for j in range(n-1):\n            a[i][j] -= 1\n    v = 0\n    Id = [[0 for i in range(n)] for j in range(n)]\n    for i in range(n):\n        for j in range(n):\n            if i < j:\n                Id[i][j] = v\n                v += 1\n    def toId(i, j):\n        if i > j:\n            i, j = j, i\n        return Id[i][j]\n    to = [[] for i in range(maxv)]\n    for i in range(n):\n        for j in range(n - 1):\n            a[i][j] = toId(i, a[i][j])\n        for j in range(n - 2):\n            to[a[i][j+1]].append(a[i][j])\n    visited = [False for i in range(maxv)]\n    calculated = [False for i in range(maxv)]\n    dp = [-1 for i in range(maxv)]\n    def dfs(v):\n        if dp[v] != -1:\n            if not calculated[v]:\n                return -1\n            return dp[v]\n        visited[v] = True\n        dp[v] = 1\n        for u in to[v]:\n            ret = dfs(u)\n            if ret == -1:\n                return -1\n            dp[v] = max(dp[v], ret + 1)\n        calculated[v] = True\n        return dp[v]\n    ans = 0\n    for i in range(v):\n        ret = dfs(i)\n        if ret == -1:  \n            print(-1)\n            exit()\n        ans = max(ans, ret)\n    print(ans)\nif __name__ == '__main__':\n    main()\n"
+  ],
+  [
+    "Q = int(input())\nisPrime = [True] * 100001\nfor p in range(2, 100001):\n    if isPrime[p]:\n       for i in range(p * p, 100001, p):\n           isPrime[i] = False\nisPrime[1],isPrime[2] = False,True\nlike_2017 = [0] * 100002\nfor i in range(1,100001):\n    if isPrime[i] and isPrime[(i+1)//2]:\n        like_2017[i] = like_2017[i-1] + 1\n    else:\n        like_2017[i] = like_2017[i-1]\nfor i in range(Q):\n    l,r = map(int,input().split())\n    print(like_2017[r] - like_2017[l-1])\n"
+  ],
+  [
+    "n, m = map(int, input().split())\ncnt = [0 for _ in range(n)]\nfor _ in range(m):\n    a, b = map(int, input().split())\n    a -= 1\n    b -= 1\n    cnt[a] = (cnt[a] + 1) % 2\n    cnt[b] = (cnt[b] + 1) % 2\nif 1 in cnt:\n    print(\"NO\")\nelse:\n    print(\"YES\")\n"
+  ],
+  [
+    "Row = int(input())\nList = list(input() for i in range(Row))\nsorted(List)\na=Row-1\nwhile a>0:\n if List[a] == List[a-1]:\n  List.remove(List[a])\n  a-=1\n else:a-=1\nelse:print(len(List))  "
+  ],
+  [
+    "c = list(input())\nprint(['YES','NO'][('N' in c)^('S' in c)or('E' in c)^('W' in c)])"
+  ],
+  [
+    "s = list(input())\nk = int(input())\nn = len(s)\nres = 0\ni = 0\nif s[0] == s[n-1]:\n    res += 1\n    s[n-1] = 'C'\nwhile i < n-1:\n    if s[i] == s[i+1]:\n        res += 1\n        i +=1\n    i+=1\nprint(res*k)\n"
+  ],
+  [
+    "s = 0\nfor i in map(int, input().split()):\n    if i == 1:\n        s+=300000\n    elif i ==2 :\n        s+= 200000\n    elif i ==3 :\n        s+= 100000\nif s== 600000:\n    s = 1000000\nprint(s)"
+  ],
+  [
+    "a,b,c = map(int, input().split())\nif a is c:\n    print(b)\nelif a is b:\n    print(c)\nelif b is c:\n    print(a)\n"
+  ],
+  [
+    "N =int(input())\na = [0] * N\nb = [0] * N\nfor i in range(N):\n    A, B = map(int, input().split())\n    a[i], b[i] = A, B\nans = 0\nfor i in range(N-1,-1,-1):\n  if (a[i]+ans)%b[i]==0:\n    push = 0\n  else:\n    push = b[i] - (a[i]+ans)%b[i]\n  ans += push\nprint(ans)"
+  ],
+  [
+    "import fractions\nmod = 10**9+7\nn = int(input())\na = list(map(int, input().split()))\nif n == 1:\n    print(a[0])\n    exit()\ng = fractions.gcd(a[0], a[1])\nf = a[0]*a[1]//g\nans = a[0]//g+a[1]//g\nfor i in range(2, n):\n    h = fractions.gcd(f, a[i])\n    g = a[i] // h % mod\n    f = f*a[i]// h\n    ans *= g\n    ans += f // a[i]\n    ans %= mod\nprint(ans)\n"
+  ],
+  [
+    "from sys import stdin\ns = stdin.readline().strip()\nn = len(s)\nn-=2\nwhile True:\n if s[n/2]== s[n/2+1:n]:\n  break\n n-=2\nprint n"
+  ],
+  [
+    "N = int(input())\nA = list(map(int, input().split()))\nacts = [(x, i) for i, x in enumerate(A)]\nacts.sort()\ndp = [[-1]*N for _ in range(N)]\ndef solve(l, r):\n    if r < l:\n        return 0\n    if dp[l][r] >= 0:\n        return dp[l][r]\n    k = r - l\n    act, init_pos = acts[k]\n    gain_l = act * abs(l - init_pos)\n    gain_r = act * abs(r - init_pos)\n    res = dp[l][r] = max(gain_l + solve(l+1, r), gain_r + solve(l, r-1))\n    return res\nprint(solve(0, N-1))\n"
+  ],
+  [
+    "def change(c):\n    if c:\n        return False\n    else:\n        return True\nN, M = map(int, input().split())\ncard = [[True for i in range(N)] for j in range(M)]\nfor i in range(N):\n    for j in range(M):\n        target = card[i]\n        target[j] = change(target[j])\n        if j - 1 >= 0:\n            target[j - 1] = change(target[j - 1])\n        if j + 1 < M:\n            target[j + 1] = change(target[j + 1])\n        if i - 1 >= 0:\n            target = card[i - 1]\n            target[j] = change(target[j])\n            if j - 1 >= 0:\n                target[j - 1] = change(target[j - 1])\n            if j + 1 < M:\n                target[j + 1] = change(target[j + 1])\n        if i + 1 < N:\n            target = card[i + 1]\n            target[j] = change(target[j])\n            if j - 1 >= 0:\n                target[j - 1] = change(target[j - 1])\n            if j + 1 < M:\n                target[j + 1] = change(target[j + 1])\nprint(sum([i.count(False) for i in card]))\n"
+  ],
+  [
+    "from sys import stdin\nx,y,z = stdin.readline().split()\nprint (int(x)-int(z))/(int(y)+int(z))\n"
+  ],
+  [
+    "def solve():\n    N = int(input())\n    a = list(map(int,input().split()))\n    cnt = 0\n    for i in range(n):\n        if i%2==0 and a%2==1:\n            cnt+=1\n    print(cnt)\nif __name__=='__main__':\n    solve()"
+  ],
+  [
+    "n=int(input())\na=[]\nfor i in range(n):\n    a.append(int(input()))\na.sort()\nans = 0\nl=0\nr=0\nif(len(a)%2==1):\n    a1=a[int(len(a)/2)]\nelse:\n    a1=a[int(len(a)/2)-1]\n    a3=a[int(len(a)/2)]\nif(len(a)%2==1):\n    if(abs(a1-a[0])>abs(a1-a[-1])):\n        for i in range(n-1):\n            if(i%2==0):\n                a2=a[l]\n                r+=1\n            else:\n                a2=a[-(r+1)]\n                l+=1\n            ans+=abs(a1-a2)\n            a1=a2\n    else:\n        for i in range(n-1):\n            if(i%2==0):\n                a2=a[-(r+1)]\n                r+=1\n            else:\n                a2=a[l]\n                l+=1\n            ans+=abs(a1-a2)\n            a1=a2\nelse:\n    if(abs(a3-a[0])>abs(a1-a[-1])):\n        a1=a3\n        for i in range(n-1):\n            if(i%2==0):\n                a2=a[l]\n                r+=1\n            else:\n                a2=a[-(r+1)]\n                l+=1\n            ans+=abs(a1-a2)\n            a1=a2\n    else:\n        for i in range(n-1):\n            if(i%2==0):\n                a2=a[-(r+1)]\n                r+=1\n            else:\n                a2=a[l]\n                l+=1\n            ans+=abs(a1-a2)\n            a1=a2\nprint(ans)\n"
+  ],
+  [
+    "import sys\ninput = sys.stdin.readline\ndef main():\n    N, M = map(int, input().split())\n    S = input()[::-1]\n    ans = []\n    i = 0\n    if S[0] == '1': print(-1); sys.exit()\n    while i < N:\n        for j in range(min(M,N-i), 0, -1):\n            if  S[i+j] == '0': break\n        else: print(-1); sys.exit()\n        ans.append(j)\n        i += j\n    print(' '.join(map(str, ans[::-1])))\nif __name__ == '__main__':\n    main()"
+  ],
+  [
+    "def solve():\n    N = int(input())\n    c = 0\n    for i in range(1, N+1, 2):\n        f = factorize(i)\n        l = []\n        for j in f:\n            l.append(j)\n            l.append(N // j)\n        l.append(N)\n        l.append(1)\n        s = len(set(l))\n        if s == 8:\n            c += 1\n    return c\nprint(solve())\n"
+  ],
+  [
+    "s = input()\nnot_exists = []\nfor c in range(97, 123):\n    if chr(c) not in s:\n        not_exists.append(chr(c))\n        print(chr(c))\n        break\nif len(not_exists) == 0:\n    print('None')\n"
+  ],
+  [
+    "import sys\ninput = sys.stdin.readline\nn, m = map(int, input().split(' '))\nWAs = [0] * n\ncorrect = 0\npenalty = 0\nfor i in range(m):\n    p, s = input().strip().split(' ')\n    p = int(p) - 1\n    if WAs[p] == -1:\n        continue\n    if s == 'AC':\n        penalty += WAs[p]\n        correct += 1\n        WAs[p] = -1\n    else:\n        WAs[p] += 1\nprint(correct, penalty)\n"
+  ],
+  [
+    "n = int(input())\narray = [int(x) for x in input().split()]\nif len(set(array)) == 1:\n    print(array[0])\n    exit()\neven = False\nodd = False\ntwo = False\none = False\nfor i in array:\n    if i % 2 == 0:\n        even = True\n    elif i % 2 != 0:\n        odd = True\n    if i == 1:\n        one = True\n    if i == 2:\n        two = True\nelse:\n    if even and odd:\n        print(1)\n    elif even:\n        min_array = min(array)\n        tmp = [x - min_array for x in array if x - min_array > 0]\n        print(min(tmp + [min_array]) if not two else 2)\n    elif odd:\n        min_array = min(array)\n        tmp = [x % min_array for x in array if x % min_array != 0]\n        for i in tmp:\n            if i % 2 == 0:\n                even = True\n            elif i % 2 != 0:\n                odd = True\n        print(1 if even else min(tmp+[min_array]) if not one else 1)\n"
+  ],
+  [
+    "a,b,m=map(int, input().split())  \nA=list(map(int, input().split()))\nB=list(map(int, input().split()))\nans=min(A)+min(B)\nxyc=[]\nfor i in range(m):\n    x,y,c=map(int, input().split())\n    x-=1\n    y-=1\n    ans=min(ans, A[x]+B[y]-c)\nprint(ans)"
+  ],
+  [
+    "N=int(input())\narr=list(map(int,input().split()))\ndef bin30(a):\n    s=bin(a)[2:]\n    return \"0\"*(30-len(s))+s\ndef rotate(arr,i):\n    return arr[i:]+arr[:i]\ndef shrink(arr):\n    ret=[]\n    i=0\n    while i<len(arr):\n        tmp = arr[i]\n        j=i\n        while j<N and arr[j]==tmp:\n            j+=1\n        ret.append((tmp,j-i))\n        i=j\n    return ret\nbarr=[bin30(a) for a in arr]\nfor bits in zip(*barr):\n    i=0\n    while i<N and bits[i]=='1': i+=1\n    for b,n in shrink(rotate(bits,i)):\n        if b=='1' and n%2==1:\n            print(\"No\")\nprint(\"Yes\")\n"
+  ],
+  [
+    "N, X = map(int, input().split())\nL = list(map(int, input().split()))\nD = 0\nfor n in range(N):\n    D += L[n]\n    if D > X:\n        break\nprint(n+1)\n"
+  ],
+  [
+    "import sys\nfrom collections import Counter\nfrom functools import reduce\ndef read_int_list():\n    return list(map(int, input().split()))\ndef read_int_list():\n    return int(input())\ndef read_str_list():\n    return input().split()\ndef read_str():\n    return input()\ns = read_str()\nn = len(s)\nc = [set() for l in s]\nfor i in range(n, 1, -1):\n    d = n - i\n    for j in range(i):\n        c[j].add(s[j + d])\n    intersection = reduce(lambda x, y: x & y, c[:i])\n    if intersection:\n        print(d)\n        break\n"
+  ],
+  [
+    "N = int(input())\ns = []\nfor i in range(N):\n    s.append(int(input()))\ns.sort()\nssum = sum(s)\ndp = [[0 for i in range(ssum+1)] for j in range(N+1)]\nfor i in range(1,N+1):\n    for j in range(ssum+1):\n        if j-s[i-1] >= 0:\n            dp[i][j] = max(dp[i][j],dp[i-1][j-s[i-1]]+s[i-1])\n        else:\n            dp[i][j] = dp[i-1][j]\nmaxa = 0\nfor j in range(N,-1,-1):\n    for i in range(ssum,-1,-1):\n        if dp[j][i]%10 == 0:\n            continue\n        else:\n            now = dp[j][i]\n            maxa = max(maxa,now)\nprint(maxa)"
+  ],
+  [
+    "S = input()\nm = S[5:7]\nif int(m) <= 4:\n  print('HeiSei')\nelse:\n  print('TBD')  "
+  ],
+  [
+    "n=int(input())\nx=list(map(int,input().split()))\nN=int(n/2)\nfor i in range(n):\n    y=[]\n    for j in range(n):\n        if j!=i:\n            y.append(x[j])\n    print(y)\n    y.sort()\n    print(y[N-1])\n"
+  ],
+  [
+    "N, K, S = map(int, input().split())\nans = [S] * K\nans.extend([0] * (N - K))\nprint(' '.join([str(x) for x in ans]))"
+  ],
+  [
+    "n = int(input())\na = list(map(int, input().split()))\ns = sum(a)\nans = 0\nwhile True:\n  if s%2==0:\n    s/=2\n    ans+=1\n  else:\n    break\nprint(ans)"
+  ],
+  [
+    "N = int(input())\nA = list(map(int, input().split()))\nimport numpy as np\nA = sorted(A)\nB = np.cumsum(A)\nmem = N\nfor i in range(N-1):\n    if 2*B[i] >= A[i+1]:\n        mem = min(i, mem)\n    else:\n        mem = N\nprint(N-mem)"
+  ],
+  [
+    "S = input()\nfrom collections import deque\ns_deque = deque(S)\ncount = 0\nwhile len(s_deque) > 1:\n    if s_deque[0] == s_deque[-1]:\n        s_deque.popleft()\n        s_deque.pop()\n    elif s_deque[0] == \"x\":\n        count += 1\n        s_deque.append(\"x\")\n    elif s_deque[-1] == \"x\":\n        count += 1\n        s_deque.appendleft(\"x\")\n    if \"x\" not in s_deque:\n        break\nif len(s_deque) == 1:\n    print(count)\nelse:\n    print(-1)"
+  ],
+  [
+    "n,m=map(int,input().split())\nmod=10**9+7\ns=list(map(int,input().split()))\nt=list(map(int,input().split()))\ndp=[[0 for i in range(m+1)] for j in range(n+1)]\nfor i in range(n):\n    for j in range(m):\n        if s[i]==t[j]:\n            dp[i+1][j+1]=(2*dp[i][j]+1)%mod\n        else:\n            dp[i+1][j+1]=dp[i][j+1]+dp[i+1][j]-dp[i][j]\n            dp[i+1][j+1]%=mod            \nprint(dp[n][m]+1)\n"
+  ],
+  [
+    "N,M=map(int, input().split())\nif N%2==1:\n  for i in range(M):\n    print(i+1,N-1-i)\nelse:\n  for i in range(M):\n    print(i+2,N-1-i)"
+  ],
+  [
+    "from functools import lru_cache\nN = int(input())\nK = int(input())\nDP = [[0] * (K * 10) for _ in range(N * 10)]\n@lru_cache(None)\ndef calc(a, b):\n    if a < 10:\n        if b == 0:\n            return 1\n        if b == 1:\n            return a\n        else:\n            return 0\n    if DP[a][b] != 0:\n        return DP[a][b]\n    x = a % 10\n    if b >= 1:\n        ans = x * calc(a // 10, b - 1) + (9 - x) * calc(a // 10 - 1, b - 1)\n    ans += calc(a//10, b)\n    DP[a][b] = ans\n    return ans\nprint(calc(N, K))"
+  ],
+  [
+    "class Solution:\n    def calc(self, a: int) -> int:\n        return a+a*a+a*a*a"
+  ],
+  [
+    "import sys\nsys.setrecursionlimit(10 ** 6)\nint1 = lambda x: int(x) - 1\np2D = lambda x: print(*x, sep=\"\\n\")\ndef II(): return int(sys.stdin.readline())\ndef MI(): return map(int, sys.stdin.readline().split())\ndef LI(): return list(map(int, sys.stdin.readline().split()))\ndef LLI(rows_number): return [LI() for _ in range(rows_number)]\ndef SI(): return sys.stdin.readline()[:-1]\ndef main():\n    n,ma,mb=MI()\n    abc=[LI() for _ in range(n)]\n    inf=10**9\n    pre=[(0,0,0)]\n    for a,b,c in abc[:n//2]:\n        pn=len(pre)\n        for i in range(pn):\n            pa,pb,pc=abc[i]\n            pre.append((a+pa,b+pb,c+pc))\n    pre=[(a*mb-b*ma,c) for a,b,c in pre]\n    pos=[(0,0,0)]\n    for a,b,c in abc[n//2:]:\n        pn=len(pos)\n        for i in range(pn):\n            pa,pb,pc=abc[i]\n            pos.append((a+pa,b+pb,c+pc))\n    pos=[(a*mb-b*ma,c) for a,b,c in pos]\n    pre.sort()\n    pos.sort()\n    j=len(pos)-1\n    ans=inf\n    for val,c in pre:\n        while val+pos[j][0]>0 and j>0:j-=1\n        while val+pos[j][0]==0 and j>=0:\n            now=c+pos[j][1]\n            if now and now<ans:ans=now\n            j-=1\n        if j<0:break\n    if ans==inf:print(-1)\n    else:print(ans)\nmain()"
+  ],
+  [
+    "a,b,t = (int(i) for i in input().split())\nprint((t//a)*b)"
+  ],
+  [
+    "import math\nimport sys\nimport os\nsys.setrecursionlimit(10**7)\ndef _S(): return sys.stdin.readline().rstrip()\ndef I(): return int(_S())\ndef LS(): return list(_S().split())\ndef LI(): return list(map(int,LS()))\nif os.getenv(\"LOCAL\"):\n    inputFile = basename_without_ext = os.path.splitext(os.path.basename(__file__))[0]+'.txt'\n    sys.stdin = open(inputFile, \"r\")\nINF = float(\"inf\")\nMOD = 998244353    \nN,K = LI()\nLRs = [LI() for _ in range(K)]\ndp = [0]*(N+1)\ncum = [0]*(N+1)\ndp[1] = 1\ncum[1] = 1\nfor i in range(2, N+1):\n    for j in range(K):\n        l, r = LRs[j]\n        start = max(0,i-r-1)\n        end = max(0,i-l)\n        dp[i] += cum[end] - cum[start]\n        dp[i] %= MOD\n    cum[i] = (cum[i-1] + dp[i]) % MOD\nans = dp[N]\nprint(ans)"
+  ],
+  [
+    "a=int(input())\nif a%2==0:\n  print(0.5)\nifelse a==1:\n  print(1)\nelse:\n  print(2/3)"
+  ],
+  [
+    "def main():\n\ts = input()\n\tans = 0\n\tstock_a = 0\n\tstate = 0 \n\tans = 0\n\tfor i in range(len(s)):\n\t\tif state == 0:\n\t\t\tif s[i] == \"A\":\n\t\t\t\tstock_a = 1\n\t\t\t\tstate = 1\n\t\t\telse:\n\t\t\t\tstock_a = 0\n\t\telif state == 1:\n\t\t\tif s[i] == \"B\":\n\t\t\t\tstate = 2\n\t\t\telif s[i] == \"A\":\n\t\t\t\tstock_a += 1\n\t\t\telse:\n\t\t\t\tstock_a = 0\n\t\t\t\tstate = 0\n\t\telif state == 2:\n\t\t\tif s[i] == \"C\":\n\t\t\t\tans += stock_a\n\t\t\t\tstate = 1\n\t\t\telif s[i] == \"A\":\n\t\t\t\tstock_a = 1\n\t\t\t\tstate = 1\n\t\t\telse:\n\t\t\t\tstate = 0\n\t\t\t\tstock_a = 0\n\tprint(ans)\nmain()"
+  ],
+  [
+    "n,a,b=map(int,input().split())\ndm=a+b*(n-1)\ndata=[]\nfor i in range(n):\n    data.append(int(input()))\nans=0\nwhile len(data):\n    x=(sum(data)//dm)+(sum(data)%dm!=0)\n    tmp=x\n    ans+=tmp\n    data=[n-x*b for n in data if n-x*b>0]\n    while 1:\n        if len(data)==0:\n            break\n        if x-(data[0]//(a-b)+(data[0]%(a-b)!=0))>=0:\n            x=x-(data[0]//(a-b)+(data[0]%(a-b)!=0))\n            del data[0]\n        else:\n            data[0]-=x*(a-b)\n            break\nprint(ans)"
+  ],
+  [
+    "n, a, b = map(int, input().split())\nif n%(a+b) < a:\n    print(n//(a+b)*a+n%(a+b))\nelse:\n    print(n//(a+b)*a+a)"
+  ],
+  [
+    "h, w, n = map(int, input().split())\nlst = [tuple(input().split()) for i in range(n)]\nans = [0] * 10\nif n == 0:\n    ans[0] = 999999996000000004\n    ans = map(str, ans)\n    print('\\n'.join(ans))\n    exit(0)\nstage = [[0] * w for i in range(h)]\nfor t in lst:\n    stage[int(t[0]) - 1][int(t[1]) - 1] = 1\ntmp = []\nfor col in range(h - 3 + 1):\n    for row in range(w - 3 + 1):\n        tmp = []\n        for cc in range(3):\n            tmp.append(stage[col + cc][row:row+3])  \n        one_list = sum(tmp, [])\n        c = one_list.count(1)\n        ans[c] += 1\n[print(ans[i]) for i in range(len(ans))]\n"
+  ],
+  [
+    "n = int(input())\nbin_n = bin(n)\nranges = []\ndef base_minus2(m, i, s):\n    tmp = s\n    if i == 1:\n        return tmp + str(m%2)\n    for j in range(i-1, -1, -1):\n        if m >= ranges[j-1][0] and m <= ranges[j-1][1]:\n            tmp += \"1\"\n            return base_minus2(m-(-2)**j, j, tmp)\n        else:\n            tmp += \"0\"\n            if j == 0:\n                return tmp + str(m%2)\nif n == 0:\n    print(\"0\")\nelif n == 1:\n    print(\"1\")\nelse:\n    for i in range(1, 30):\n        min_r = sum([(-2)**j for j in range(1, i, 2)]) + (-2)**i\n        max_r = sum([(-2)**j for j in range(0, i, 2)]) + (-2)**i\n        ranges.append([min_r, max_r])\n    result = base_minus2(n, 30, \"\")\n    print(result.lstrip(\"0\"))\n"
+  ],
+  [
+    "n = int(input())\np = list(int(x) for x in input().split())\nans = 0\nfor i in range(1, n-1):\n    if (p[i-1]<p[i] and p[i]<p[i+1]) or (p[i+1]<p[i] and p[i]<p[i-1]):\n        ans += 1\nprint(ans)"
+  ],
+  [
+    "N = int(input())\nb = [int(num) for num in input().split()]\nqueue = [[b,[]]]\ndef bfs(queue):\n    c,prev = queue.pop(0)\n    cnt = len(c)-1\n    while cnt >= 0:\n        if c[cnt] == cnt+1:\n            del c[cnt]\n            prev = [cnt+1] + prev\n            queue.append([c,prev])\n            break\n        cnt -= 1\n    return queue\nans = -1\nwhile queue != []:\n    if queue[-1][0] == []:\n        ans = queue[-1]\n        break\n    queue = bfs(queue)\nif ans == -1:\n    print(ans)\nelse:\n    for num in ans[1]:\n        print(num)\n"
+  ],
+  [
+    "k = int(input())\na = 0\nimport queue\nq = queue.Queue()\nfor i in range(1,10):\n  q.put(i)\nwhile True:\n  x = q.get()\n  a += 1\n  if a == k:\n    break\n  elif x % 10 != 9 and x % 10 != 0:\n      q.put(10*x + x%10 - 1)\n      q.put(10*x + x%10)\n      q.put(10*x + x%10 + 1)\n  elif x % 10 == 9:\n    q.put(10*x + x%10 - 1)\n    q.put(10*x + x%10)\n  else:\n    q.put(10*x + x%10)\n    q.put(10*x + x%10 + 1)\nprint(x)"
+  ],
+  [
+    "N = int(input())\nans = 0\nfor _ in range(N):\n    l, r = map(int, input().split())\n    ans += r - l + 1\nprint(ans)"
+  ],
+  [
+    "from math import ceil, floor, gcd\na, b, c, d = list(map(int, input().split()))\nc0 = floor(b/c) - ceil(a/c) + 1\nd0 = floor(b/d) - ceil(a/d) + 1\nlcm = c * d / gcd(c,d)\nlcm0 = math.floor(b/lcm) - math.ceil(a/lcm) + 1\nans = (b - a + 1) - c0 - d0 + lcm0\nprint(ans)"
+  ],
+  [
+    "N = int(input())\nS,T = list(map(str, input().split()))\nfor i in range(N):\n    print(S[i],end='')\n    print(T[i],end='')"
+  ],
+  [
+    "D,G = map(int,input().split())\nP = []\nnum_p = 0\nfor i in range(1,D+1):\n    p,c = map(int,input().split())\n    num_p += p\n    for j in range(1,p+1):\n        P += [(j,i*100*j+c*(j==p))]\ndp = [0]*(num_p+1)\nfor k,pt in P:\n    if k==1:\n        t_dp = dp[:]\n    for cur in range(1,num_p+1):\n        if cur>=k:\n            dp[cur] = max(dp[cur], t_dp[cur-k]+pt)\nfor i in range(num_p+1):\n    if dp[i]>=G:\n        print(i)\n        break"
+  ],
+  [
+    "N, P = map(int, input().split())\nlst_A = list(map(int, input().split()))\nlst_odd_even = [x%2 for x in lst_A]\nif 1 in lst_odd_even:\n    ans = 2 ** (N-1)\nelse:\n    if P == 0:\n        ans = 2 ** N\n    else:\n        ans = 0\nprint(ans)\n"
+  ],
+  [
+    "N = int(input())\ns =input().split()\ncnt = 0\nfor i in range(1,N-1):\n    if i == 0:\n        continue\n    elif i == int(s[i]):\n        continue\n    else:\n       cnt = cnt + 1\nprint(cnt)\n"
+  ],
+  [
+    "A,B,C=map(int,input().split())\nprint(\"A\"if B==C else \"B\"if A==C else \"C\")\n   "
+  ],
+  [
+    "a, b = [int(a) for a in input().split()]\nprint('Yes' if a * b % 2 == 0 else 'No')\n"
+  ],
+  [
+    "T=int(input())\nsi=[]\nsum=0\nfor i in range(T):\n  si.append(int(input()))\nsi.sort()\nfor k in range(T):\n    sum=sum+si[k]\nif sum%10!=0:\n    print(sum)\nelse:\n    for j in range(T):\n        if si[j]%10!=0:\n            sum=sum-si[j]\n            break\n        else:\n            pass\n    if sum%10==0:\n        sum=0\n    else:\n        pass\n    print(sum)\n"
+  ],
+  [
+    "H, W = map(int, input().split())\nc_list = []\nfor i in range(H):\n    c = input().split()\n    c_list.append(c)\n    c_list.append(c)\nfor c in c_list:\n    print(c)"
+  ],
+  [
+    "N, C = map(int, input().split())\nf = [[0] * 100000 for _ in range(C)]\nfor i in range(N):\n    s, t, c = map(int, input().split())\n    f[c-1][s-1] = 1\n    f[c-1][t] = -1\nfor c in range(C):\n    for i in range(100000):\n        if i > 0:\n            f[c][i] += f[c][i-1]\nprint(max(map(sum, zip(*f))))"
+  ],
+  [
+    "n = int(input())\na = list(map(int, input().split()))\nt = 1\nfor num in a:\n  t *= num\n  if t > 10**18:\n    break\nif t <= 10**18:\n  print(t)\nelse:\n  print(-1)"
+  ],
+  [
+    "def main():\n    x, y, z = map(int, input().split(\" \"))\n    print(f\"{z} {x} {y}\")\nif __name__ == \"__main__\":\n    main()"
+  ],
+  [
+    "N = int(input().strip())\nc = 0\nfor n in range(1, N+1, 2):\n  d = 0\n  for i in range(1, n+1):\n    if i * i > n:\n      break\n    if n % i == 0:\n      d += 2\n      if d >= 9:\n        break\n  if d == 8:\n    c += 1\nprint(c)\n"
+  ],
+  [
+    "a=input()\ns=input()\nt=s if a>=3200 else red\nprint(t)"
+  ],
+  [
+    "n,m = [int(x) for x in input().split(\" \")]\na = [int(x) for x in input().split(\" \")]\na = sorted(a)\nmaxb = 0\nmaxc = 0\nfor i in range(m):\n    b,c = [int(x) for x in input().split(\" \")]\n    if b > maxb:\n        numa = 0\n        for i in range(0,b):\n            if(a[i] > c):\n                break\n            numa += 1\n        a = [c]*numa + a[numa:]\n        a.sort()\n        maxb = b\n    elif c > maxc:\n        numa = 0\n        for i in range(0,b):\n            if(a[i] > c):\n                break\n            numa += 1\n        a = [c]*numa + a[numa:]\n        a.sort()\n        maxc = c\nprint(sum(a))"
+  ],
+  [
+    "import sys\nimport math\ninput = sys.stdin.readline\nsys.setrecursionlimit(10**6)\nn = int(input())\nprint(math.floor(math.sqrt(n))**2)\n"
+  ],
+  [
+    "n = int(input())\nli = list(map(int,input().split()))\nlis = []\nx = 0\ny = 0\nz = 0\nfor i in range(n):\n    if li[i] % 4 == 0:\n        x += 1\n    elif li[i] % 2 == 0:\n        y = 1\n    else:\n        z += 1\nif y = 0:\n    if x >= y + 1:\n        print(\"Yes\")\n    else:\n        print(\"No\")\nelse:\n    if x >= y:\n        print(\"Yes\")\n    else:\n        print(\"No\")\n"
+  ],
+  [
+    "N, M = (int(i) for i in input().split())\nDP[N] = [False]*N\nfor i in range(M):\n  a, b = (int(i) for i in input().split())\n  for j in (a, b):\n    DP[j-1] = not DP[j-1]\nfor i in range(N):\n  if DP[i]:\n    print(NO)\n    break\nelse:\n  print(YES)"
+  ],
+  [
+    "import sys\nS = input()\nK = int(input())\nletter_set = sorted(set(S))\nans_list = []\nfor letter in letter_set:\n    letters = letter\n    while letters in S:\n        ans_list.append(letters)\n        if len(ans_list) == K:\n            print(ans_list[K - 1])\n            sys.exit()\n        for i in range(len(letter_set)):\n            if letters + letter_set[i] in S:\n                letters = letters + letter_set[i]\n                break\n        else:\n            break\nprint(ans_list[K - 1])\n"
+  ],
+  [
+    "x,y = map(int, input().split())\nans = abs(abs(x)-abs(y))\nif x > y and abs(x) != abs(y) and x*y > 0:\n\tans+=2\nelif x*y < 0 or (x>y and x==0) or (x>y and y==0):\n\tans+=1a\nprint(ans)\n"
+  ],
+  [
+    "class UnionFind:\n    def __init__(self, n):\n        self.n = n\n        self.parents = [-1] * n\n    def find(self, x):\n        if self.parents[x] < 0:\n            return x\n        else:\n            self.parents[x] = self.find(self.parents[x])\n            return self.parents[x]\n    def union(self, x, y):\n        x = self.find(x)\n        y = self.find(y)\n        if x == y:\n            return\n        if self.parents[x] > self.parents[y]:\n            x, y = y, x\n        self.parents[x] += self.parents[y]\n        self.parents[y] = x\n    def size(self, x):\n        return -self.parents[self.find(x)]\n    def same(self, x, y):\n        return self.find(x) == self.find(y)\n    def members(self, x):\n        root = self.find(x)\n        return [i for i in range(self.n) if self.find(i) == root]\n    def roots(self):\n        return [i for i, x in enumerate(self.parents) if x < 0]\n    def group_count(self):\n        return len(self.roots())\n    def all_group_members(self):\n        return {r: self.members(r) for r in self.roots()}\n    def __str__(self):\n        return '\\n'.join('{}: {}'.format(r, self.members(r)) for r in self.roots())\nN = int(input())\nA = input().split()\nSum = 0\nfor i in range(N):\n    Sum += int(A[i])\nans = 0\nfor i in range(N):\n    ans += (int(A[i])*(Sum-int(A[i]))%1000000007)%1000000007\nprint((ans/2)%1000000007)\n"
+  ],
+  [
+    "a = int(input())\nans = a+a*a+a*a*a\nreturn ans\n"
+  ],
+  [
+    "N = int(input())\nd = map(int, input().split())\ntotal = 0\nfor i in range(N):\n    for j in range(i+1, N):\n        total += d[i] * d[j]\nprint(total)"
+  ],
+  [
+    "import numpy as np\nN = int(input())\nx = list(map(int,input().split()))\nx.sort()\nx_cm = np.cumsum(x)[::-1]\nx = x[::-1]\ncount = 1\nfor i in range(N-1):\n    if x[i]<=x_cm[i+1]*2:\n        count += 1\n    else:\n        break\nprint(count)"
+  ],
+  [
+    "import sys\nfrom collections import deque\ninput = sys.stdin.readline\nclass Bellman_Ford:\n    def __init__(self, v=None, e=None, lis=None, start=None, end=None, inf=float('inf')):\n        self.V = v\n        self.E = e\n        self.lis = lis\n        self.start = start if start else 0\n        self.end = end if end else self.V-1\n        self.inf = inf\n        self.close_minus = False\n    def getlist(self, lis):\n        self.lis = lis\n    def def_start(self, s):\n        self.start = s\n    def def_end(self, e):\n        self.end = e\n    def def_inf(self, inf):\n        self.inf = inf\n    def def_vertice(self, v):\n        self.V = v\n    def def_edge(self, e):\n        self.E = e\n    def prepare(self):\n        self.cost = [self.inf]*self.V \n        self.cost[self.start] = 0 \n    def search(self):\n        for i in range(self.V):\n            update = False \n            for x, y, z in self.lis:\n                if self.cost[y] > self.cost[x] + z:\n                    self.cost[y] = self.cost[x] + z\n                    update = True\n            if not update:\n                break\n            if i == self.V - 1:\n                self.close_minus = True\n                return False\n        return True\n    def main(self):\n        self.prepare()\n        self.search()\n    def cost_all(self):\n        return self.cost\ndef main():\n    n, m, p = map(int, input().split())\n    graph = [None]*m\n    tree_forth = [[] for _ in range(n)]\n    tree_back = [[] for _ in range(n)]\n    for i in range(m):\n        a, b, c =map(int, input().split())\n        tree_forth[a-1].append(b-1)\n        tree_back[b-1].append(a-1)\n        c = p-c\n        graph[i] = (a-1, b-1, c)\n    already1, already2 = [True]*n, [True]*n\n    for already, tree, start in zip([already1, already2], [tree_forth, tree_back], [0, n-1]):\n        not_yet = deque([start])\n        already[start] = False\n        while not_yet:\n            key = not_yet.pop()\n            for v in tree[key]:\n                if already[v] == False:\n                    continue\n                already[v] = False\n                not_yet.append(v)\n    graph_new = []\n    for i in range(m):\n        a, b, c = graph[i]\n        if already1[a] or already1[b] or already2[a] or already2[b]:\n            continue\n        graph_new.append((a, b, c))\n    bf = Bellman_Ford(v=n, e=m, lis=graph_new)\n    bf.main()\n    if bf.close_minus:\n        print(-1)\n    else:\n        print(max(0, -bf.cost[n-1]))\nif __name__ == \"__main__\":\n    main()"
+  ],
+  [
+    "N = int(input())\na = list(int,map(input().split())\ni = 0       \n\tfor x,y in enumerate a:\n         b=x+1\n\t\tif b%2!=0 and y%2!=0:\n    \t\ti+=1\nprint(i)\n"
+  ],
+  [
+    "def main():\n    n = int(input())\n    ai = list(map(int, input().split()))\n    assert len(ai) == n\n    mi = 999999\n    for a in ai:\n        mi = min(mi, fact_of_two(a))\n    print(mi)\ndef fact_of_two(i):\n    for j in range(10000):\n        if i % (2 ** j) != 0:\n            break\n    assert j >= 1\n    return j - 1\nif __name__ == \"__main__\":\n    main()\n"
+  ],
+  [
+    "from decimal import *\nINT = lambda: int(input())\nINTM = lambda: map(int,input().split())\nSTRM = lambda: map(str,input().split())\nSTR = lambda: str(input())\nLIST = lambda: list(map(int,input().split()))\nLISTS = lambda: list(map(str,input().split()))\ndef do():\n    n=INT()\n    count=0\n    if n%2==1:\n        print(0)\n    else:\n        for i in range(1,30,1):\n            b=n//(2*(5**i))\n            count+=b\n        print(count)\nif __name__ == '__main__':\n    do()"
+  ],
+  [
+    "n, a, b = map(int, input().split())\nif a > b:\n    a, b = b, a\nmax = a\nif a + b < n:\n    min = 0\nelse:\n    min = (a + b) - n\nprint(max, min)\n"
+  ],
+  [
+    "fn main() {\n    let v = read_vec::<u64>();\n    let a = v[0];\n    let b = v[1];\n    let x = v[2];\n    let extra = if a % x == 0 { 1 } else { 0 };\n    println!(\"{}\", b / x - a / x + extra);\n}\nfn read<T: std::str::FromStr>() -> T {\n    let mut s = String::new();\n    std::io::stdin().read_line(&mut s).ok();\n    s.trim().parse().ok().unwrap()\n}\nfn read_vec<T: std::str::FromStr>() -> Vec<T> {\n    read::<String>()\n        .split_whitespace()\n        .map(|e| e.parse().ok().unwrap())\n        .collect()\n}\nfn read_vec2<T: std::str::FromStr>(n: u32) -> Vec<Vec<T>> {\n    (0..n).map(|_| read_vec()).collect()\n}\nfn yn(result: bool) {\n    if result {\n        println!(\"Yes\");\n    } else {\n        println!(\"No\");\n    }\n}\n"
+  ],
+  [
+    "a,b = map(int, input().split())\ntotal = 0\nans = 0\nfor i in range(1,1000):\n    total += i\n    if total - b => 0:\n        ans = total -b\n        break\nprint(ans)"
+  ],
+  [
+    "from itertools import permutations\nfrom collections import defaultdict\nn, C = map(int, input().split())\nd = [list(map(int, input().split())) for i in range(C)]\nc = [list(map(int, input().split())) for i in range(n)]\ncounts = [defaultdict(int) for _ in range(3)]\nfor i in range(n):\n    for j in range(n):\n        counts[(i+j+2) % 3][c[i][j]-1] += 1\ndef calc_cost(dic, color):\n    cost = 0\n    for k, v in dic.items():\n        cost += d[k][color] * v\n    return cost\nINF = 10**9\ncost = INF\nfor colors in permutations(range(C), 3):\n    tmp_cost = 0\n    for i in range(3):\n        tmp_cost += calc_cost(counts[i], colors[i])\n    cost = min(cost, tmp_cost)\nprint(cost)"
+  ],
+  [
+    "A = input()\nN = int(A)\nif N ==1:\n    a = 1\nelif 1<=N and N<=100 and N%2 == 0:\n    a = 0.5\n    a = float(a)\nelif 1<=N and N<=100 and N%2 == 1:\n    a = (N/2 + 1)/N\nprint(a)"
+  ],
+  [
+    "N, D = map(int,input().split())\nans = 0\nfor _ in range(N):\n    X, Y = map(int,input().split())\n    if X*X + Y*Y <= D*D:\n        ans += 1\nprint(ans)"
+  ],
+  [
+    "import copy\nN, M = map(int, input().split())\ndef f(x):\n    return int(x) - 1\nA = []\nC = []\nfor i in range(M):\n    a, b = map(int, input().split())\n    A.append(a)\n    C.append(list(map(f, input().split())))\ndef rec(cost, still_closed, d):\n    if d == M:\n        if sum(still_closed) == 0:\n            return cost\n        else:\n            return - 1\n    still_closed1 = copy.copy(still_closed)\n    still_closed2 = copy.copy(still_closed)\n    res1 = rec(cost, still_closed1, d + 1)\n    for c in C[d]:\n        still_closed[c] = 0\n    res2 = rec(cost + A[d], still_closed, d + 1)\n    if res1 == - 1 or res2 == - 1:\n        return max(res1, res2)\n    else:\n        return min(res1, res2)\nprint(rec(0, [1]*N, 0))"
+  ],
+  [
+    "x, y=map(int, input().split())\nprint(-1 if x%y==0 else x)"
+  ],
+  [
+    "from itertools import chain\nn, m = map(int, input().split())\nedges = [[] for _ in range(n + 1)]\nfor _ in range(m):\n    u, v = map(int, input().split())\n    edges[u].append(v)\ndef find_next(pos, e):\n    c1 = e[pos]\n    c2 = list(chain.from_iterable([e[c]for c in c1]))\n    return list(chain.from_iterable([e[c] for c in c2]))\ns, t = map(int, input().split())\nvisited = [0 for _ in range(n + 1)]\ncost = 0\nst = [(s, 0)]\nans = -1\npre = None\nwhile len(st):\n    pos, cost = st.pop()\n    visited[pos] = 1\n    if pos == t:\n        ans = cost\n        break\n    for n in find_next(pos, edges):\n        if visited[n] == 0:\n            st.append((n, cost + 1))\nprint(ans)"
+  ],
+  [
+    "s = list(input())\ns.sort()\nif s[0]==s[1] and s[2]==s[4]:\n  print(\"Yes\")\nelse:\n  print(\"No\")"
+  ],
+  [
+    "from collections import Counter\nimport sys\nimport itertools\ninput = sys.stdin.readline\nc = Counter()\nH,W,N = map(int,input().split())\nfor _ in range(N):\n  a,b = map(int,input().split())\n  for dx,dy in itertools.product([-1,0,1],repeat = 2):\n    aa = a + dx\n    bb = b + dy\n    if 2 <= aa <= H-1 and 2 <= bb <= W-1:\n\t    c[(aa,bb)] += 1\nresult = Counter(c.values())\nresult[0] = (H-2)*(W-2) - sum(result.values())\nfor j in range(10):\n  print(result[j])"
+  ],
+  [
+    "n = int(input())\na = list(map(int,input().split()))\ndef array_count(arr):\n    arr_target = [[]]\n    cnt = 1\n    for i in range(1,len(arr)):\n        if arr[i] == arr[i-1]:\n            cnt += 1\n        else:\n            arr_target.append([arr[i-1],cnt])\n            cnt = 1\n    arr_target.append([arr[len(arr)-1],cnt])\n    del arr_target[0]\n    return arr_target\na.sort()\na = array_count(a)\nb= []\nfor i in range(len(a)):\n    if a[i][1] >= 2:\n        b.append(a[i][0])\n    if a[i][1] >= 4:\n        b.append(a[i][0])\nb.sort()\nb.reverse()\nif len(b) <= 1:\n    print(0)\nelse:\n    print(b[0]*b[1])\n"
+  ],
+  [
+    "s = input()\nt = input()\ntemp = 0\nfor i in range(len(s)-len(t)+1):\n  ns = s[i:i+len(t)]\n  cnt = 0\n  for k,l in zip(ns,t):\n    if k==l:\n      cnt += 1\n  temp = max(cnt,temp)\nprint(len(t)-temp)"
+  ],
+  [
+    "s1=input()\ns2=input()\ncnt=0\nfor i in range(len(l1)):\n    print(l1[i])\n    print(l2[-i-1])\n    if l1[i]==l2[-i-1]:\n        cnt+=1\nif cnt == 3:\n    print(\"YES\")\nelse:\n    print(\"NO\")"
+  ],
+  [
+    "import sys\ndef main():\n    input = sys.stdin.buffer.readline\n    N, M = map(int, input().split())\n    skip = (N // 2) // 2 + 1 if N % 2 == 0 else None\n    count = 0\n    left, right = 0, N + 1\n    while count < M:\n        left += 1\n        if left == skip:\n            continue\n        right -= 1\n        print(left, right)\n        count += 1\nif __name__ == '__main__':\n    main()\n"
+  ],
+  [
+    "N, Ma, Mb = map(int, input().split())\nA, B, C = [], [], []\nfor i in range(N):\n    ai, bi, ci = map(int, input().split())\n    A.append(ai)\n    B.append(bi)\n    C.append(ci)\nINF = float('inf')\ndp = [[[INF] * 401 for i in range(401)] for j in range(N + 1)]\ndp[0][0][0] = 0\nfor i in range(1, N + 1):\n    for a in range(401):\n        for b in range(401):\n            if a - A[i - 1] >= 0 and b - B[i - 1] >= 0:\n                dp[i][a][b] = min(dp[i][a][b], dp[i - 1][a][b], dp[i - 1][a - A[i - 1]][b - B[i - 1]] + C[i - 1])\n            else:\n                dp[i][a][b] = min(dp[i][a][b], dp[i - 1][a][b])\nans = INF\nfor i in range(1, 401):\n    target_a = Ma * i\n    target_b = Mb * i\n    if target_a > 400 or target_b > 400:\n        break\n    ans = min(ans, dp[N][target_a][target_b])\nprint(ans if ans != INF else -1)"
+  ],
+  [
+    "N, K = map(int, input().split())\nA = list(map(int, input().split()))\nB = [1]*N\nfor k in range(K):\n    for i in range(N):\n        for a in range(A[i] + 1):\n            B[i + a]+= 1\n            if i-a >= 0:\n                B[i - a] += 1\n    for i in range(N):\n        if k != K-1:\n            A[i] = B[i]\n        else:\n            print(A[i], \" \", end = '')\n    "
+  ],
+  [
+    "import sys\nsys.setrecursionlimit(10**7)\ninput=sys.stdin.readline\nK=int(input())\nS=input()\nM=len(S)\nN=K+M\nmod=10**9+7\nans=pow(26,N,mod)\nclass Data():\n    def __init__(self):\n        self.power=1\n        self.rev=1     \nclass Combi():\n    def __init__(self,N,mod):\n        self.lists=[Data() for _ in range(N+1)]\n        self.mod=mod  \n        for i in range(2,N+1):\n            self.lists[i].power=((self.lists[i-1].power)*i)%self.mod\n        self.lists[N].rev=pow(self.lists[N].power,self.mod-2,self.mod)\n        for j in range(N,0,-1):\n            self.lists[j-1].rev=((self.lists[j].rev)*j)%self.mod\n    def combi(self,K,R):\n        if K<R:\n            return 0\n        else:\n            return ((self.lists[K].power)*(self.lists[K-R].rev)*(self.lists[R].rev))%self.mod\nc=Combi(2*10**6+10000,mod)\nfor i in range(M):\n    ans-=c.combi(N,i)*pow(25,N-i,mod)\n    ans%=mod\nprint(ans%mod)"
+  ],
+  [
+    "nums = input()\nset_nums = list(set(nums))\nother = sum(nums) - sum(set_nums)\ndel set_nums[other]\nprint(set_nums[0])"
+  ],
+  [
+    "import numpy as np\nN = int(input())\nx = list(map(int,input().split()))\nx.sort()\nx_cm = np.cumsum(x)[::-1]\nx = x[::-1]\ncount = 1\nfor i in range(N-1):\n    if x[i]<=x_cm[i+1]*2:\n        count += 1\n    else:\n        break\nprint(count)"
+  ],
+  [
+    "H, W = map(int, input().split())\na = [0 for i in range(H)]\nfor i in range(H):\n    a[i] = list(map(int, input().split()))\nresult = []\nfor i in range(H):\n    for j in range(W):\n        if i == H-1 and j == W-1:\n            continue\n        if j == W-1 and a[i][j] % 2 == 1 and i < H-1:\n            a[i][j] -= 1\n            a[i+1][j] += 1\n            result.append([i+1, j+1, i+2, j+1])\n        elif a[i][j] % 2 == 1:\n            a[i][j] -= 1\n            a[i][j+1] += 1\n            result.append([i+1, j+1,i+1, j+2])\nprint(len(result))\nfor i in range(len(result)):\n    print('%d %d %d %d' % (result[i][0],result[i][1],result[i][2],result[i][3]))\n"
+  ],
+  [
+    "def main():\n    import math\n    t1, t2 = map(int, input().split())\n    a1, a2 = map(int, input().split())\n    b1, b2 = map(int, input().split())\n    x = (a1-b1)*t1\n    y = (a2-b2)*t2\n    diff = x+y\n    if x == -y:\n        print(\"infinity\")\n        return\n    elif x*y>0 or abs(x)>abs(y):\n        print(0)\n        return\n    x = abs(x)\n    diff = abs(diff)\n    ans = x//diff\n    remainder = x%diff\n    if remainder==0:\n        print(ans*2)\n    else:\n        print(ans*2+1)\nif __name__ == '__main__':\n    main()\n"
+  ],
+  [
+    "from operator import itemgetter\nimport math\nD, G = map(int, input().split())\nscore = [0] * D\nfor j in range(D):\n    score[j] = [0] * 4\n    score[j][0], score[j][1] = map(int, input().split())\n    score[j][3] = (j+1) * 100\n    score[j][2] = ((j+1) * 100 * score[j][0] + score[j][1]) / score[j][0]\nans = 0\nnowscore = 0\nwhile (nowscore < G):\n    score = sorted(score, key=itemgetter(3), reverse=True)\n    kouho_goal = score[0][3]\n    kouho_numofproblem = score[0][0]\n    score = sorted(score, key=itemgetter(2), reverse=True)\n    if kouho_goal * kouho_numofproblem >= G - nowscore:\n        ans_kouho = math.ceil((G - nowscore) / kouho_goal)\n        for i in range(len(score)):\n            if score[i][3] * score[i][0] + score[i][1] >= G - nowscore:\n                ans_kouho = min(ans_kouho, score[i][0])\n        ans += ans_kouho\n        break\n    else:\n        ans += score[0][0]\n        nowscore += score[0][3] * score[0][0] + score[0][1]\n        score.pop(0)\nprint(ans)\n"
+  ],
+  [
+    "import numpy as np\nn = int(input())\na = list(map(int, input().split()))\nif 0 in a:\n  print(0)\n  exit()\nprod = 1\nfor i in range(n):\n  prod *= a[i]\n  if prod > 10 ** 18:\n    print(-1)\n    exit()\nprint(prod)\n"
+  ],
+  [
+    "import bisect\nn = int(input())\na = sorted([int(input()) for i in range(n)])\nLIS = [a[0]]\nfor i in range(len(a)):\n    if a[i] >= LIS[-1]:\n        LIS.append(a[i])\n    else:\n        LIS[bisect.bisect_left(LIS, a[i])] = a[i]\nprint(len(LIS)-1)"
+  ],
+  [
+    "print(min(n,a,b=map(int,input().split())),max(0,a+b-n))"
+  ],
+  [
+    "n,k = map(int,input().split())\na = list(map(int,input().split()))\nmod = 10**9+7\na.sort()\nmi = []\npl = []\nif n == k:\n    ans = 1\n    for i in a:\n        ans *= i\n        ans %= mod\n    print(ans)\n    exit()\nfor i in a:\n    if i < 0:\n        mi.append(i)\n    else:\n        pl.append(i)\nif pl == []:\n    ans = 1\n    count = 0\n    if k%2:\n        while count < k:\n            ans *= a[-1-count]\n            ans %= mod\n            count += 1\n    else:\n        while count < k:\n            ans *= a[count]\n            ans %= mod\n            count += 1\n    print(ans)    \n    exit()\npl = sorted(pl,reverse=True)\nip = 0\nim = 0\nif k%2:\n    count = pl[0]\n    k -= 1\n    ip += 1\nelse:\n    count = 1\nwhile k > 0:\n    check1 = True\n    check2 = True\n    if ip+2 <= len(pl):\n        x = pl[ip]*pl[ip+1]    \n    else:\n        x = 1\n        check1 = False\n    if im+2 <= len(mi):\n        y = mi[im]*mi[im+1]\n    else:\n        y = 1\n        check2 = False\n    if x > y or (check1 and not check2):\n        ip += 2\n        count = (x*count)%mod\n    else:\n        if check2:\n            im += 2\n            count = (y*count)%mod\n    if check1 == False and check2 == False:\n        break\n    k -= 2\nprint(count%mod)"
+  ],
+  [
+    "from collections import deque\nN = input()\nA = []\nres = []\nbegin = 0\nend = len(A) - 1\nres = deque()\nres.append(A[begin])\nres.append(A[end])\nbegin += 1\nend -= 1\n"
+  ],
+  [
+    "N,A,B=map(int,input().split())\nX=list(map(int,input().split()))\nans=0\npre=X[0]\nfor xi in X[1:]:\n    if (xi-pre)*A-B>0:\n        ans+=B\n    else:\n        ans+=(xi-pre)\n    pre=xi\nprint(ans)"
+  ],
+  [
+    "a,v = map(int,input().split())\nb,w = map(int,input().split())\nt = int(input())\na_spot = a + (v*t)\nb_spot = b + (w*t)\nA_spot = a - (v*t)\nB_spot = b - (w*t)\nif a <= b:\n    if a_spot >= b_spot:\n        print(\"YES\")\n    else:\n        print(\"NO\")\nelse:\n    if  A_spot <= B_spot:\n        print(\"YES\")\n    else:\n        print(\"NO\")"
+  ],
+  [
+    "n=int(input())\np=list(map(int,input().split()))\nc=0\ndef swap(i):\n    global c\n    t=p[i+1]\n    p[i+1]=p[i]\n    p[i]=t\n    c+=1\nfor i in range(n-1):\n    if p[i]==i+1:swap(i)\nprint(c)"
+  ],
+  [
+    "from functools import reduce\nfrom collections import deque\nimport math\ndef main():\n    INF = float(\"inf\")\n    MOD = 10**9+7\n    H, W = (int(_) for _ in input().split())\n    a=[]\n    for h in range(H):\n       a.append(list(int(_) for _ in input().split()))\n    ans = []\n    start_h = -1\n    start_w = -1\n    goal_h = -1\n    goal_w = -1\n    for h in range(H):\n        for w in range(W):\n            if a[h][w] % 2 == 1 and start_h == -1 and start_w == -1:\n                start_h = h+1\n                start_w = w+1\n            elif a[h][w] % 2 == 1 and goal_h == -1 and goal_w == -1:\n                goal_h = h+1\n                goal_w = w+1\n                pre_start_h = start_h\n                pre_start_w = start_w\n                for i in range(1,goal_h - start_h+1):\n                    ans.append(str(pre_start_h)+\" \"+str(pre_start_w)+\" \"\n                               +str(start_h+i)+\" \"+str(start_w))\n                    pre_start_h = start_h+i\n                for j in range(1,goal_w - start_w+1):\n                    ans.append(str(pre_start_h)+\" \"+str(pre_start_w)+\" \"\n                               +str(pre_start_h)+\" \"+str(start_w+j))\n                    pre_start_w = start_w+j\n                a[start_h-1][start_w-1]+=-1\n                a[goal_h-1][goal_w-1]+=1\n                start_h = -1\n                start_w = -1\n                goal_h = -1\n                goal_w = -1\n    print(len(ans))\n    print(\"\\n\".join(ans))\nif __name__ == '__main__':\n    main()\n"
+  ],
+  [
+    "N = int(input())\nball_position = []\nfor _ in range(N):\n    i, j = map(int, input().split())\n    ball_position.append((i, j))\ndef tuple_inverse(a):\n    ai, aj = a\n    if ai < 0:\n        return (-ai, -aj)\n    return(ai, aj)\ndef tup2_diff(a, b):\n    ai, aj = a\n    bi, bj = b\n    return tuple_inverse((ai - bi , aj - bj))\ncalculation_list = []\nfor i in range(len(ball_position)):\n    for j in range(i + 1, len(ball_position)):\n        calculation_list.append(tup2_diff(ball_position[i], ball_position[j]))\nimport collections\nc = collections.Counter(calculation_list).most_common(1)\nprint(N - calculation_list.count(c[0][0]))"
+  ],
+  [
+    "n=input()\nv=[]\nfor i in range(n):\n  v.append(input())\nv.sort()\ns=0\nwhile(len(v)>1):\n    v0=v.pop(0)\n    v1=v.pop(0)\n    v.append((v0+v1)/2)\n    v.sort()\nprint(v[0])"
+  ],
+  [
+    "n,m = map(int,input().split())\ndp = [[10**9]*(2**n+5) for _ in range(m+1)]\ndp[0][0] = 0\nfor i in range(m):\n    a,b = map(int,input().split())\n    c = list(map(int,input().split()))\n    res = 0\n    for x in c:\n        res|=1<<(x-1)\n    for j in range(2**n):\n        ni = i+1\n        nj = j|res\n        dp[ni][j] = min(dp[ni][j],dp[i][j])\n        dp[ni][nj] = min(dp[ni][nj],dp[i][j]+a)\nprint(dp[m][2**n-1])"
+  ],
+  [
+    "n, t = map(int, input().split())\na = [0]*3333\nb = [0]*3333\ndp = [0]*6666\nfor i in range(1, n+1):\n\ta[i], b[i] = map(int, input().split())\nfor i in range(1, n+1):\n\tfor j in range(6000, a[j]-1, -1):\n\t\tif ((a[i] <= j) and ((j-a[i])<t)):\n\t\t\tdp[j] = max(dp[j], dp[j - a[i]] + b[i])\nprint(max(dp))\n"
+  ],
+  [
+    "a,b,c,d=map(float,input().split())\nta=c/b\naa=a/d\nif(c%d):\n    ta=ta+1\nif(a%d):\n    aa=aa+1\nif(ta<aa):\n    print(\"Yes\")\nelse:\n    print(\"No\")\n"
+  ],
+  [
+    "a=int(input())\nprint(a+a**2+a**3)"
+  ],
+  [
+    "n = int(input())\nans = 0\nfor i in range(n):\n  a,b = map(int,input().split())\n  ans += b-a-1\nprint(ans)  "
+  ],
+  [
+    "a,b,c =int(input().split())\nif a=<b:\n  ans=c\nelse:\n  ans=c-(a-b)\n  if ans<0:\n    ans=0\nprint(ans)"
+  ],
+  [
+    "a, b, c = map(int, input().split())\nif a < c and c < b:\n  print('Yes')\nelif b < c and c < a:\n  print('Yes')\nelse:\n  print('No')\n"
+  ],
+  [
+    "MOD = 10 ** 9 + 7\ndef main():\n    n, m = [int(s) for s in input().split()]\n    print(solve(m, n))\ndef solve(m, n):\n    factors = list(get_prime_factors(m))\n    h = max(c for f, c in factors)\n    table = dict()\n    table[1] = [1 for _ in range(h + 1)]\n    i = 1\n    while i < n:\n        j = n & (i - 1)\n        table[i * 2] = [0 for _ in range(h + 1)]\n        if j != 0:\n            table[i + j] = [0 for _ in range(h + 1)]\n        for x in range(h + 1):\n            for y in range(h + 1 - x):\n                table[i * 2][x + y] = (table[i * 2][x + y] + table[i][x] * table[i][y]) % MOD\n                if j != 0:\n                    table[i + j][x + y] = (table[i + j][x + y] + table[i][x] * table[j][y]) % MOD\n        i *= 2\n    ans = 1\n    for f, c in factors:\n        ans = ans * table[n][c] % MOD\n    return ans\ndef get_prime_factors(n):\n    import itertools\n    m = n\n    for i in itertools.count(2):\n        if i * i > m:\n            break\n        c = 0\n        while True:\n            x, y = divmod(m, i)\n            if y != 0:\n                break\n            c += 1\n            m = x\n        if c != 0:\n            yield i, c\n    if m != 1:\n        yield m, 1\nmain()\n"
+  ],
+  [
+    "H, W, D = map(int, input().split())\nA = []\nfor i in range(H):\n    A.extend(list(map(int, input().split())))\nsize = H * W\na_map = [0]*(size+1)\nfor i in range(1, size+1):\n    a_map[A[i-1]] = i\ncost = []\nQ = int(input())\nfor i in range(Q):\n    l, r = map(int, input().split())\n    c = 0\n    for i in range(l, r, D):\n        dis = abs(a_map[i+D] - a_map[i])\n        c += dis//3 + dis%3\n    cost.append(c)\nprint('\\n'.join(map(str, cost)))"
+  ],
+  [
+    "import math\nN = int(input())\np = []\nfac = math.factorial(N)\nfor _ in range(N):\n    x, y = list(map(int, input().split()))\n    p.append([x, y])\nt = []\ndef dfs(a, b):\n    if len(b) == N:\n        return t.append(b)\n    for i in range(len(a)):\n        dfs(a[:i] + a[i+1:], b + [a[i]])\ndfs(p, [])\ntotal = 0\nfor i in range(len(t)):\n    for j in range(len(t[i]) - 1):\n        total += math.sqrt((t[i][j][0] - t[i][j+1][0]) ** 2 + (t[i][j][1] - t[i][j+1][1]) ** 2)\nprint(total / fac)"
+  ],
+  [
+    "from collections import Counter\ns = input().strip()\nl = len(s)\nc = Counter(s)\ndpl = 0\nfor n in c.values():\n    if n == 1:\n        continue\n    dpl += n * (n - 1) // 2\nprint(l * (l - 1) // 2 - dpl + 1)\n"
+  ],
+  [
+    "l = list(input())\ncnt = [0]\nfor i in range(len(l)-1):\n  if (l[i] == 'R' and l[i+1] == 'L') or (l[i] == 'L' and l[i+1] == 'R'):\n    cnt += [i,i+1]\ncnt.append(len(l)-1)\nans = []\nfor i in range(len(cnt)//4):\n  rr = cnt[4*i+1]-cnt[4*i]+1\n  ll = cnt[4*i+3]-cnt[4*i+2]+1\n  if (rr+ll)%2==0:\n    ans += ([0]*(rr-1) + [(rr+ll)//2]*2 + [0]*(ll-1))\n  else:\n    if rr%2 == 1:\n      ans += ([0]*(rr-1) + [(rr+ll+1)//2,(rr+ll-1)//2] + [0]*(ll-1))\n    else:\n      ans += ([0]*(rr-1) + [(rr+ll-1)//2,(rr+ll+1)//2] + [0]*(ll-1))\nfor i in range(len(ans)):\n  if i != len(ans)-1:\n    print(ans[i], end = ' ')\n  else:\n    print(ans[i])"
+  ],
+  [
+    "import math\nn,h=map(int,input().split())\na_l=[]\nb_l=[]\nc=0\nfor i in range(n):\n  a,b=map(int,input().split())\n  a_l.append(a)\n  b_l.append(b)\na_l.sort()\nb_l.sort()\nfor i in range(1,n+1):\n  if a_l[-1]<=b_l[(-1)*i]:\n    h-=b_l[(-1)*i]\n    c+=1\n    if h<=0:\n      break\n  else:\n    break\nc+=math.ceil(h/a_l[-1])\nprint(c)"
+  ],
+  [
+    "import sys,heapq,resource\nfrom collections import deque,defaultdict\nprintn = lambda x: sys.stdout.write(x)\ninn = lambda : int(input())\ninl   = lambda: list(map(int, input().split()))\ninm   = lambda:      map(int, input().split())\nDBG = True \nR = 10**9 + 7\ndef ddprint(x):\n  if DBG:\n    print(x)\ndef perm(k,d):\n    x = k\n    for i in range(1,d):\n        x = (x * (k-i)) % R\n    return x\ndef dfs(prev, cur):\n    d = len(dst[cur])-1\n    if d==0:\n        return 1\n    x = perm(k-2,d)\n    for nd in dst[cur]:\n        if nd==prev:\n            continue\n        x = (x * dfs(cur,nd)) % R\n    return x\nsys.setrecursionlimit(250000)\nsoft,hard = resource.getrlimit(resource.RLIMIT_STACK)\nresource.setrlimit(resource.RLIMIT_STACK,(200000,hard))\nn,k = inm()\ndst = [ [] for i in range(n) ]\nfor i in range(n-1):\n    a,b = inm()\n    a -= 1\n    b -= 1\n    dst[a].append(b)\n    dst[b].append(a)\nd = len(dst[0])\nx = perm(k,d+1)\nfor nd in dst[0]:\n    x = (x * dfs(0,nd)) % R\nprint(x)\n"
+  ],
+  [
+    "a = list(map(int, input().split()))\nif a[1] >= a[2]:\n  b = a[2]\nif a[2] >= a[1]:\n  b = a[1]\nc = a[0] - a[1] - a[2]\nif c <= 0:\n  c = 0\nd = str(b) + \" \" + str(c)\nprint(d)\n"
+  ],
+  [
+    "function abcSwap(arr):\n  arr[0], arr[1] = arr[1], arr[0]\n  arr[1], arr[2] = arr[2], arr[1]\n  return arr\n"
+  ],
+  [
+    "import math\nN, H = map(int, input().split())\nab = [list(map(int, input().split())) for i in range(N)]\nab.sort(key=lambda x:x[1])\nab.sort(key=lambda x:x[0],reverse=True)\nmainweapon = ab[0]\ndel ab[0]\nnew_ab =[]\nfor i in range(N-1):\n    if ab[i][1] > mainweapon[1]:\n        new_ab.append(ab[i])\nnew_ab.sort(key=lambda x:x[1],reverse=True)\nattack = 0\nfor i in range(len(new_ab)):\n    H -= new_ab[i][1]\n    attack += 1\n    if H <= 0:\n        break\nif H > 0:\n    attack += math.ceil((H - mainweapon[1])/mainweapon[0])\n    attack += 1\nprint(attack)"
+  ],
+  [
+    "n = int(input())\na = [int(input()) for _ in range(n)]\nans = 0\nif a[0] != 0:\n    ans = -1\nelif n == 1:\n    ans = 0\nelse:\n    b = a[1:]\n    for k,i in enumerate(b):\n        if i <= 1:\n            ans += i\n        else:\n            num = i-a[k]\n            if num == 1:\n                ans += 1\n            elif num <= 0:\n                ans += i\n            else:\n                ans = -1\n                break\nprint(ans)"
+  ],
+  [
+    "a, b = map(int, input().split())\nif a*b % 2:\n    print('Even')\nelse:\n    print('Odd')"
+  ],
+  [
+    "n = int(input())\na = list(map(int, input().split()))\nans = 0\nfor i in range(n):\n    while a[i] % 2 == 0 and a[i] > 0:\n        ans += 1\n        a[i] //= 2\nprint(ans)\n"
+  ],
+  [
+    "import sys\ninput = sys.stdin.readline\nN = int(input())\nxy = [[int(i) for i in input().split()] for _ in range(N)]\nd1 = []\nd2 = []\nfor x, y in xy :\n  d1.append(x + y)\n  d2.append(x - y)\nd1.sort(reverse=True)\nd2.sort(reverse=True)\nprint(max(\n  d1[0] - d1[-1],\n  d1[-1] - d1[0],\n  d2[0] + d2[-1],\n  d2[-1] - d2[0])\n)\n"
+  ],
+  [
+    "n = int(input())\na = list(map(int, input().split()))\nldp = [[0]*n,[0]*n,]\nrdp = [\n    [0]*n,\n    [0]*n,\n]\nfor i in range(n):\n    flag = (i+1)%2\n    ldp[flag][i] = a[i] if i-2 < 0 else ldp[flag][i-2]+a[i]\n    ldp[(flag+1)%2][i] = 0 if i-1 < 0 else ldp[(flag+1)%2][i-1]\nfor i in range(n, 0, -1):\n    flag = (n-(i-1))%2\n    rdp[flag][i-1] = a[i-1] if i+1 >= n else rdp[flag][i+1]+a[i-1]\n    rdp[(flag+1)%2][i-1] = 0 if i >= n else rdp[(flag+1)%2][i]\nif n%2 == 0:\n    ans = max(rdp[1][1], ldp[1][n-2])\n    for i in range(1, n-1):\n        if i%2 == 0:\n            ans = max(max(ldp[0][i-1], ldp[1][i-1]) + rdp[1][i+1], ans)\n        else:\n            ans = max(ldp[1][i-1] + max(rdp[0][i+1], rdp[1][i+1]), ans)\nelse:\n    ans = max(rdp[1][2], ldp[1][n-3])\n    for i in range(1, n-2):\n        if i%2 == 0:\n            if i%2 == 0:\n                ans = max(max(ldp[0][i-1], ldp[1][i-1]) + rdp[1][i+2], ans)\n            else:\n                ans = max(ldp[1][i-1] + max(rdp[0][i+2], rdp[1][i+2]), ans)\nprint(ans)\n"
+  ],
+  [
+    "n = int(input())\nx = list(map(int, input().split()))\nsorted_x = sorted(x)\nlmid = sorted_x[n // 2 - 1]\nrmid = sorted_x[n // 2]\nfor xi in x:\n    if xi > rmid:\n        print(lmid)\n    else:\n        print(rmid)"
+  ],
+  [
+    "N = input()\nif '9' in N:\n  print('Yes')\nelse:\n  print('No')"
+  ],
+  [
+    "from collections import defaultdict\nn, k = map(int, input().split())\na = list(map(int, input().split()))\na_cs = [0] * (n + 1)\nfor i in range(n):\n    a_cs[i + 1] = a_cs[i] + a[i]\nans = 0\nd = defaultdict(int)\nfor j in range(n + 1):\n    if j - k >= 0:\n        d[(a_cs[j - k] - (j - k)) % k] -= 1\n    ans += d[(a_cs[j] - j) % k]\n    d[(a_cs[j] - j) % k] += 1\nprint(ans)\n"
+  ],
+  [
+    "from collections import Counter as c\ndef fact(n):\n    d=[]\n    for i in range(2,int(n**0.5)+2):\n        while n%i==0:\n            n//=i\n            d.append(i)\n    if n!=1:d.append(n)\n    return c(d)\nn=int(input())\nd=c()\nfor i in range(1,n+1):\n    d+=fact(i)\nf=lambda n,x:sum(1 for i in p(d.values(),n) if all(map(lambda x,y:x>=y,i,x)))\nprint(f(3,(2,4,4))//2+f(2,(2,24))+f(2,(4,14))+f(1,(74,)))"
+  ],
+  [
+    "from fractions import gcd\nfrom itertools import combinations,permutations,accumulate \nfrom collections import deque,defaultdict,Counter\nimport decimal\nimport re\nimport sys\nsys.setrecursionlimit(10000000)\nmod = 10**9 + 7\ndef readInts():\n  return list(map(int,input().split()))\ndef I():\n  return int(input())\nh,w = readInts()\nS = \"\"\nfor i in range(h):\n    S += input()\nLIST = Counter(S)\nif h%2 == 0 and w%2 == 0:\n    for k,v in LIST.items():\n        if v%4:\n            print('No')\n            exit()\nelif (h%2 == 0 and w%2) or (h%2 and w%2 == 0):\n    two = 0\n    for k,v in LIST.items():\n        if v%2 or v%4 == 3:\n            print('No')\n            exit()\n        if v%4 == 2:\n            two += 1\n    if h%2 == 0:\n        if two > h//2:\n            print('No')\n            exit()\n    else:\n        if two > w//2:\n            print('No')\n            exit()\nelse:\n    odd = 0\n    two = 0\n    for k,v in LIST.items():\n        if v%4 == 1:\n            odd += 1\n        if v%4 == 2:\n            two += 1\n        if v%4 == 3:\n            print('No')\n            exit()\n    if odd != 1:\n        print('No')\n        exit()\n    if two > ((h-1)//2 + (w-1)//2):\n        print('No')\n        exit()\nprint('Yes')\n"
+  ],
+  [
+    "import itertools\nn, m, x = map(int, input().split())\nT = [list(map(int, input().split())) for _ in range(n)]\nA = list(range(1, n + 1))\nflag1 = True\nans = -1\nfor i in range(1, n + 1):\n    if i == 1:\n        for j in range(n):\n            flag = True\n            for k in range(m):\n                if T[j][k] < x:\n                    flag = False\n                    break\n            if flag == True and flag1 == True:\n                ans = T[j]\n                flag1 = False\n            elif flag == True:\n                ans = min(ans, T[j])\n    else:\n        tmp = list(itertools.combinations(range(1, n + 1), i))\n        for j in range(len(tmp)):\n            flag = True\n            M = [0] * m\n            tmp1 = 0\n            for k in range(len(tmp[j])):\n                for l in range(m):\n                    M[l] = M[l] + T[tmp[j][k] - 1][l + 1]\n                tmp1 = tmp1 + T[tmp[j][k] - 1][0]\n            for k in range(m):\n                if M[k] < x:\n                    flag = False\n                    break\n            if flag == True and flag1 == True:\n                ans = tmp1\n                flag1 = False\n            elif flag == True:\n                ans = min(ans, tmp1)\nprint(ans)"
+  ],
+  [
+    "n=3\na=[0]*n\na[:]=map(int,input().split())\na.sort()\nif sum(a)==2*a[n-1]:\n  print(\"Yes\")\nelse:\n  print(\"No\")"
+  ],
+  [
+    "import sys\nn,y = map(int, input().split())\nfor a in range(n+1):\n\tfor b in range(n+1-a):\n\t  if (a * 10000 + b * 5000 + (n-a-b) * 1000 == y):\n\t\tprint(str(a) + ' ' + str(b) + ' ' + str(c))\n\t\tsys.exit()\nprint('-1 -1 -1')\nsys.exit()"
+  ],
+  [
+    "import math\nN = int(input())\nn = int(math.sqrt(N))\nif n * n != N:\n    n += 1\nans = 0\nfor i in range(1, n):\n    if N % i ==  0:\n        if N % (N // i) == N % i:\n            ans += N // i - 1\nprint(ans)"
+  ],
+  [
+    "A = raw_input()\nB = A.split( )\nC, D = int(B[0]), int(B[1])\nif C == 1:\n  if D == 1:\n    print 'Draw'\n  else:\n    print 'Alice'\nelse:\n  if D == 1:\n    print 'Bob'\n  else:\n    if C ＞ D:\n      print 'Alice'\n    elif C ＜ D:\n      print 'Bob'\n    else:\n      print 'Draw'"
+  ],
+  [
+    "n = list(map(int, input().split())\ncount = 0\nwhile count == n[2]:\n\tif n[0] > 0:\n    \tn[0]-=1   \n        count+=1\n    elif n[1] > 0:\n        n[1]-=1\n        count+=1\nprint(n[0] n[1])"
+  ],
+  [
+    "N = int(input())\nA = list(map(int, input().split()))\nB = list(map(int, input().split()))\nC = list(map(int, input().split()))\nA.insert(0,0)\nB.insert(0,0)\nC.insert(0,)\nmanzoku = 0\nprev = 0\nfor a in A:\n  manzoku += B[a]\n  if prev != 0 and prev != N:\n    manzoku += C[prev]\n  prev = a\nprint(manzoku)"
+  ],
+  [
+    "import math\nimport itertools as it\nimport fractions as fra\nN=int(input())\nK=int(input())\nanswer=0\nif K==1:\n    if N>=10:\n        print((int(math.log10(N))-1)*9+int(str(N)[0])+9)\n    else:\n        print(N)\nelif K==2:\n    if N>=100:\n        for i in range(1,int(math.log10(N))):\n            answer+=81*i\n        answer+=(N//(10**int(math.log10(N))))*9*int(math.log10(N))\n        print(answer)\n    else:\n        for i in range(1,N+1):\n            if i>10:\n                if i%10!=0:\n                    answer+=1\n        print(answer)\nelse:\n    if N>=1000:\n        for i in range(2,int(math.log10(N))):\n            answer+=729*math.factorial(i)/(math.factorial(i-2)*math.factorial(2))\n        answer+=N//(10**int(math.log10(N)))*81*math.factorial(int(math.log10(N))-1)/(math.factorial(int(math.log10(N))-3)*2)\n        print(answer)\n    else:\n        for i in range(1,N+1):\n            base=str(i)\n            if len(base)-base.count(\"0\")==3:\n                answer+=1\n        print(answer)"
+  ],
+  [
+    "N, *A = map(int, open('0').read().split())\nl = 0\nr = 0\ns = A[l]\nx = A[l]\nans = 0\nflag = True\nfor l in range(N):\n  while s==x and flag:\n    r += 1\n    if r==N:\n      flag = False\n      break\n    s += A[r]\n    x ^= A[r]\n  ans += r-l\n  s -= A[l]\n  x ^= A[l]\nprint(ans)"
+  ],
+  [
+    "N = int(input())\nA = list(map(int, input().split()))\nseki = 1\nif A.count(0) == 0:\n    for i in range(N):\n        seki = seki*A[i]\n        if seki > 10**18:\n            seki = -1\n            break\nelse:\n    seki = 0\nprint(seki)"
+  ],
+  [
+    "import sys\nn=int(input())\na=[]\nb=[]\nfor i in range(n):\n  s=input()\n  overall=0\n  minimum=0\n  current=0\n  for j in range(len(s)):\n    if s[j]=='(':\n      current+=1\n    else:\n      current-=1\n    minimum=min(current,minimum)\n  overall=current\n  if overall>=0:\n    a.append([overall,minimum])\n  else:\n    b.append([overall,minimum])\nfinalsum=0\na=sorted(a, key=lambda t:t[1])\na.reverse()\nb=sorted(b, key=lambda t:t[0]-t[1])\nb.reverse()\nfor i in a:\n  if finalsum+i[1]<0:\n    print('No')\n    sys.exit()\n  finalsum+=i[0]\nfor i in b:\n  if finalsum+i[1]<0:\n    print('No')\n    sys.exit()\n  finalsum+=i[0]\nif finalsum==0:\n  print('Yes')\nelse:\n  print('No')"
+  ],
+  [
+    "import fractions\nfrom functools import reduce\ndef lcm(x, y):\n    return (x * y) // fractions.gcd(x, y)\ndef gcd_list(numbers):\n    return reduce(fractions.gcd, numbers)\nn = int(input())\na = list(map(int, input().split(' ')))\nans = 0\nsumv = 1\nsumv = gcd_list(a)\nfor num in a:\n    ans += num // sumv\nprint(ans)\n"
+  ],
+  [
+    "S = input()\ndate = S.split('/')\nans = \"Heisei\"\nif S != \"2019/04/30\" or int(date[0]) > 2019 or int(date[1]) > 4:\n    ans = \"TBD\"\nprint(ans)\n"
+  ],
+  [
+    "N = int(input())\ns = 0\nans = []\nfor i in range(1, N+1):\n  ans.append(i)\n  s += i\n  if s == N:\n    break\n  elif (N-s) < i:\n    s-= i\n    ans.pop(-1)\nfor i in ans:\n  print(i)"
+  ],
+  [
+    "List=[7,5,3]\nX=int(input())\nif X in List:\n  print(\"YES\")\nElse:\n  print(\"NO\")"
+  ],
+  [
+    "N=int(input())\na = list(map(int, input().split())) 　\narc=[]\nabc=[]\nint ans=0\nint j=0\nfor j in max(a):\n    for i in a:\n        if(i<j) :\n            abc.append(i)\n        else:\n            arc.append(i)\n        if(len(arc)==len(abc)):\n            ans ++\nprint(ans)"
+  ],
+  [
+    "n = int(input())\nif n % 3 == 0:\n\tprint (n/3)\nelse:\n\tprint (n//3)"
+  ],
+  [
+    "s = input()\nt = input()\ndic = {}\nfor i in range(len(s)):\n    c = s[i]\n    if c not in dic:\n        dic[c] = []\n    dic[c].append(i)\nrepeat = 0\nfocus = 0\nans = 0\nfor i in range(len(t)):\n    c = t[i]\n    if c not in dic:\n        ans = -1\n        break\n    if dic[c][-1] <= focus:\n        repeat+=1\n        focus = dic[c][0]\n    else:\n        l = 0\n        r = len(dic[c])\n        mid = (r+l)//2\n        while r == l:\n            if(dic[c][mid] > focus):\n                l = mid\n            else:\n                r = mid\n        focus = dic[c][mid-1]\nprint(repeat*len(s)+focus+1)\n"
+  ],
+  [
+    "n, x, m = map(int, input().split())\nmn = min(n, m)\nS = set()\nA = []\nsum_9 = 0 \nfor _ in range(mn):\n    if x in S: break\n    S.add(x)\n    A.append(x)\n    sum_9 += x\n    x = x*x % m\nif len(A) >= mn:\n    print(sum_9)\n    exit()\npre_len = A.index(x)\ncyc_len = len(A) - pre_len\nnxt_len = (n - pre_len) % cyc_len\ncyc_num = (n - pre_len) // cyc_len\npre = sum(A[:pre_len])\ncyc = sum_9 - pre\nnxt = sum(A[pre_len: pre_len + nxt_len])\nprint(pre + cyc * cyc_num + nxt)\n"
+  ],
+  [
+    "N = int(input())\nA = list(map(int, input().split()))\nB = list(map(int, input().split()))\ncount = - sum(A) + sum(B)\nfor i in range(N):\n  inv = max(0, A[i] - B[i])\nif count >= 0 and inv <= count:\n  print(\"Yes\")\nelse :\n  print(\"No\")"
+  ],
+  [
+    "import sys\ninput = sys.stdin.readline\nclass AtCoder:\n    def main(self):\n        S = input().rstrip()\n        T = input().rstrip()\n        ans = 0\n        for i, s in enumerate(S):\n            if s == T[i]:\n                ans += 1\n        print(ans)\nif __name__ == '__main__':\n    AtCoder().main()"
+  ],
+  [
+    "def sum_part(N, k):\n  return k*(2*N-k+1)/2-k*(k-1)/2+1\nN, K = map(int, input().split())\nans = 0\nfor k in range(K,N+2)\n  ans += sum_part(N, k)\nprint(ans)\n"
+  ],
+  [
+    "N = int(input())\nif num < 1:\n    l = []\nelif num == 1:\n    l = [1]\nelse:\n    l = []\n    l.append(1)\n    [l.append(i) for i in range(2, num // 2 + 1) if num % i == 0]\n    l.append(num)\nl = list(map(str,l))\nL = len(l)\nr = [max(len(l[i]), len(l[L-i-1])) for i in range(int((L+1)//2))]\nprint(min(r))"
+  ],
+  [
+    "input_line = input()\ndef gen(n):\n  if n < 10:\n    yield n\n  else:\n    for m in gen(n/10):\n      yield m\n    yield n%10\na = [str(i) for i in gen(int(input_line))]\nd = []\nfor s in a:\n  if s == '9':\n    s = '1'\n  elif s == '1':\n    s = '9'\n  d.append(s)\nprint(d)\nmojiretu = ''\nfor x in d:\n    mojiretu += x\nprint(mojiretu)"
+  ],
+  [
+    "from collections import defaultdict\nfrom collections import Counter\ndef aCb(n, r):\n    ans = 1\n    for x in range(1, n + 1):\n        ans *= x\n    for x in range(1, n - r + 1):\n        ans //= x\n    for x in range(1, r + 1):\n        ans //= x\n    return ans\ndef main():\n    N, A, B = map(int, input().split())\n    v_list = list(sorted(list(map(int, input().split()))))\n    c_entire = Counter(v_list)\n    total = sum(v_list[-A:])\n    ans = 0\n    for n in range(A, B + 1):\n        p = v_list[-n:]\n        if sum(p) * A == total * n:\n            c = Counter(p)\n            t = 1\n            for k, v in c.items():\n                t *= aCb(c_entire[k], v)\n            ans += t\n    print(\"{0:.7f}\".format(total / A))\n    print(ans)\nif __name__ == '__main__':\n    main()\n"
+  ],
+  [
+    "import math\nA,B,C,D = map(int, input().split())\nc = int(B/C) - int((A-1)/C)\nd = int(B/D) - int((A-1)/D)\nCD = int(C * D / math.gcd(C, D))\ncd = int(B/CD) - int((A-1)/CD)\nans = B - (A-1) - (c + d - cd)\nprint(ans)"
+  ],
+  [
+    "import sys\nfrom  collections import deque\nsys.setrecursionlimit(10^7)\ndef dfs(base, n, s, cur):\n  if cur == n:\n    return 1\n  else:\n    return (dfs(base, n, s, cur+1)+(0 if base[cur] in s else dfs(base, n, s+base[cur], cur+1)))%(10^9+7)\nN = int(input())\nS = list(input().strip())\nprint(dfs(S,N,\"\",0)-1)\n"
+  ],
+  [
+    "p = lambda n:2**(n+1)-1\na = lambda n:2**(n+2)-3\ndef dfs(n,x):\n    if n==0:\n        return 0 if x<=0 else 1\n    if x<=1+a(n-1):\n        return dfs(n-1,x-1)\n    else:\n        return p(n-1)+1 + dfs(n-1,x-2-a(n-1))\nn, x = map(int, input().split())\nprint(dfs(n,x))\n"
+  ],
+  [
+    "import math\nimport numpy as np\nN,K = map(int,input().split())\nA = np.array(list(map(int,input().split())))\neikyo = np.zeros((N,N))\ndef make_eikyo(A):\n    for i,a in enumerate(A):\n        satan = max(0,math.ceil(i-a))\n        utan = min(N,math.floor(i+a))\n        eikyo[i][:] = 0\n        if satan==utan:\n            eikyo[i][i] = 1\n        else:\n            eikyo[i][satan:utan+1] = 1\n    n_A = eikyo.sum(axis=0)\n    return n_A\nfor _ in range(K):\n    A = make_eikyo(A)\nfor i,a in enumerate(A):\n    if i+1 == A.size:\n        print(int(a))\n    else:\n        print(int(a), end=' ')\n"
+  ],
+  [
+    "s=input()\nif s=='':\n    print('Yes')\nelif (s.count('E') and s.count('W') and s.count('N') and s.count('S'))>0:\n    print('Yes')\nelse:\n    print('No')"
+  ],
+  [
+    "numbers = raw_input().split()\nA = int(numbers[0])\nB = int(numbers[1])\nif A == B :\n   print \"Draw\"\nelif A == 1:\n   print \"Alice\"\nelif B == 1:\n   print \"Bob\"\nelif A > B:\n   print \"Alice\"\nelif B > A:\n   print \"Bob\""
+  ],
+  [
+    "n,m = map(int,input().split())\nfor _ in range(m):\n    a += str(n)\nfor _ in range(n):\n    b += str(m)\nprint(a if n <= m else b)"
+  ],
+  [
+    "n, a, b = map(int, input().split())\nx = list(map(int, input().split())) \ncost = 0\nfor i in range(n-1):\n    length = x[i+1] - x[i]\n    if length*a < b:\n        cost += length*a\n    else:\n        cost += b\nprint(cost)"
+  ],
+  [
+    "def sum_part(N, k):\n  return k*(2*N-k+1)/2-k*(k-1)/2+1\nN, K = map(int, input().split())\nans = 0\nfor k in range(K,N+2)\n  ans += sum_part(N, k)\nprint(ans)\n"
+  ],
+  [
+    "N, A, B = map(int, input().split())\nif A>B or (N==1 and A!=B):\n    print(0)\nelse:\n    print((N-1)*B+A - (N-1)*A+B + 1)"
+  ],
+  [
+    "N = int(input())\nb_list = list(map(int,input().split()))\nanswer_list = []\nfor i in range(N):\n    if b_list[i] > i+1:\n        print(-1)\n        break\nfor i in range(N): \n    for j in range(N-i, 0, -1):\n        if b_list[j-1] == j:\n            answer_list.append(b_list[j-1])\n            b_list.pop(j-1)\n            break\nanswer_list.reverse()\nfor i in range(N):\n    print(answer_list[i])"
+  ],
+  [
+    "N = int(raw_input())\ns = [int(raw_input()) for _ in range(N)]\nflag = True\nfor i in range(len(s)):\n    if (s[i] % 10) != 0:\n        flag = False\n        break\nif flag:\n    print(0)\nelse:\n    s.sort()\n    s = s[::-1]\n    Ncombination = 2**len(s)\n    for c in range(Ncombination):\n        SUM = 0\n        combination = format(c, 'b').zfill(len(s))\n        for i in range(len(s)):\n            print(\"combination\", i, combination[i])\n            if combination[i] == \"0\":\n                SUM += s[i]\n        if (SUM % 10) != 0:\n            break\n    print(SUM)"
+  ],
+  [
+    "N, T = map(int, input().split())\nfound = False\nmin_cost = float(\"inf\")\nfor i in range(N):\n    c, t = map(int, input().split())\n    if t <= T and c < min_cost:\n        min_cost = c\n        found = True\nprint(min_cost if found else \"TLE\")"
+  ],
+  [
+    "n = int(input())\na = [0 for _ in range(n)]\nb = [0 for _ in range(n)]\nfor i in range(n):\n    a[i], b[i] = map(int, input().split())\nans = 0 \nfor i in reversed(range(n)):\n    if i!=0:\n        a[i] += ans \n    if a[i]%b[i] == 0:\n        continue\n    else:\n        ans += (a[i]//b[i]+1)*b[i]-a[i]\nprint(ans)\n"
+  ],
+  [
+    "def factorize(n):\n    b = 2\n    fct = []\n    while b * b <= n:\n        while n % b == 0:\n            n //= b\n            fct.append(b)\n        b = b + 1\n    if n > 1:\n        fct.append(n)\n    return fct\ndef calc(tp):\n    ans = 1\n    for a in tp:\n        ans *= a\n    return ans\nsoinsu = factorize(n)\nyakusu = []\nfor i in range(len(soinsu)):\n    yakusu += [a for a in itr.combinations(soinsu, i+1) ]\nyakusu = set(yakusu)\nans = 0\nfor a in yakusu:\n    c = calc(a)\n    if c < math.sqrt(n):\n        continue\n    sho = n // (c-1)\n    amari = n % (c-1)\n    if sho == amari:\n        ans += (c-1)\nprint(ans)"
+  ],
+  [
+    "n,k = map(int,input().split())\na = list(map(int,input().split()))\nmod = 10**9+7\na.sort()\nmi = []\npl = []\nif n == k:\n    ans = 1\n    for i in a:\n        ans *= i\n        ans %= mod\n    print(ans)\n    exit()\nfor i in a:\n    if i < 0:\n        mi.append(i)\n    else:\n        pl.append(i)\nif pl == []:\n    ans = 1\n    count = 0\n    if k%2:\n        while count < k:\n            ans *= a[-1-count]\n            ans %= mod\n            count += 1\n    else:\n        while count < k:\n            ans *= a[count]\n            ans %= mod\n            count += 1\n    print(ans)    \n    exit()\npl = sorted(pl,reverse=True)\nip = 0\nim = 0\nif k%2:\n    count = pl[0]\n    k -= 1\n    ip += 1\nelse:\n    count = 1\nwhile k > 0:\n    check1 = True\n    check2 = True\n    if ip+2 <= len(pl):\n        x = pl[ip]*pl[ip+1]    \n    else:\n        x = 1\n        check1 = False\n    if im+2 <= len(mi):\n        y = mi[im]*mi[im+1]\n    else:\n        y = 1\n        check2 = False\n    if x > y or (check1 and not check2):\n        ip += 2\n        count = (x*count)%mod\n    else:\n        if check2:\n            im += 2\n            count = (y*count)%mod\n    if check1 == False and check2 == False:\n        break\n    k -= 2\nprint(count%mod)"
+  ],
+  [
+    "def main():\n  N = int(input())\n  monsters = list(map(int, input().split()))\n  monsters = sorted(monsters)\n  while True:\n    for i in range(1, len(monsters)):\n      monsters[i] = monsters[i] % monsters[0]\n    if 0 in monsters:\n      monsters = list(set(monsters))\n      monsters.remove(0)\n      monsters = sorted(monsters)\n    if len(monsters) == 2:\n      if monsters[1] < monsters[0]:\n        monsters[0] -= monsters[1]\n        continue\n      last = monsters[1] - monsters[0]\n      monsters[0] = last\n      monsters.remove(monsters[1])\n    if len(monsters) == 1:\n      break\n  print(monsters[0])\nmain()"
+  ],
+  [
+    "k=int(input())\nprint(k*ACL)"
+  ],
+  [
+    "import sys\ninput = sys.stdin.readline\nsys.setrecursionlimit(10 ** 7)\nimport bisect\nimport numpy as np\nN = int(input())\nif N % 10 in [2, 4, 5, 7, 9]:\n    print(\"hon\")\nelif N % 10 in [0, 1, 6, 8]:\n    print(\"pon\")\nelif N % 10 in [3]:\n    print(\"bon\")"
+  ],
+  [
+    "import fractions\nmod = 10**9+7\nn = int(input())\na = list(map(int, input().split()))\nif n == 1:\n    print(a[0])\n    exit()\ng = fractions.gcd(a[0], a[1])\nf = a[0]*a[1]//g\nans = a[0]//g+a[1]//g\nfor i in range(2, n):\n    h = fractions.gcd(f, a[i])\n    g = a[i] // h % mod\n    f = f*a[i]// h\n    ans *= g\n    ans += f // a[i]\n    ans %= mod\nprint(ans)\n"
+  ],
+  [
+    "N = int(raw_input())\nTime = [0 for i in range(N)]\nC, S, F = map(int,raw_input().split())\nTime[0] += S\nfor i in range(1,N-1):\n    Cnew, S, F = map(int,raw_input().split())\n    Time[i] += S\n    for j in range(i):\n        if Time[j] > S:\n            Time[j] = Time[j] + C\n            if (Time[j] - S) % F == 0:\n                pass\n            else:\n                Amari = F - ((Time[j] - S) % F)\n                Time[j] = Time[j] + Amari\n        else:\n            Time[j] = S\n    C = Cnew\nfor i in range(N-1):\n    Time[i] += C\n    print Time[i]"
+  ],
+  [
+    "import sys\nsys.setrecursionlimit(10**7)\ndef max_happiness(n, data, dp, a, b, c):\n  if dp[n] is not None:\n    return dp[n]\n  if n == 0:\n    if a and b:\n      return max(data[n][0], data[n][1])\n    elif b and c:\n      return max(data[n][1], data[n][2])\n    elif c and a:\n      return max(data[n][2], data[n][0])\n  max_a = -1\n  max_b = -1\n  max_c = -1\n  if a:\n    max_a = data[n][0] + max_happiness(n-1, data, dp, a=False, b=True, c=True)\n  if b:\n    max_b = data[n][1] + max_happiness(n-1, data, dp, a=True, b=False, c=True)\n  if c:\n    max_c = data[n][2] + max_happiness(n-1, data, dp, a=True, b=True, c=False)\n  dp[n] = max(max_a, max_b, max_c)\n  return dp[n]\nN = int(input())\ndata = []\ndp = [None]*N\nfor _ in range(N):\n  data.append([int(num) for num in input().split()])\nprint(max_happiness(N-1, data, dp, a=True, b=True, c=True))"
+  ],
+  [
+    "from itertools import product\nimport math\nD,G = map(int,input().split())\nA = [list(map(int,input().split())) for _ in range(D)]\ncmin = 10**3+5\nfor x in product((0,1),repeat=D):\n    score = 0\n    cnt = 0\n    for i in range(D):\n        if x[i]==1:\n            p,c = A[i]\n            score += (i+1)*100*p+c\n            cnt += p\n    if score>=G:\n        cmin = min(cmin,cnt)\n    else:\n        for i in range(D-1,-1,-1):\n            if x[i]==0:\n                p,c = A[i]\n                if score+(i+1)*100*p>=G:\n                    n = math.ceil((G-score)//((i+1)*100))\n                    cnt += n\n                    break\n        cmin = min(cmin,cnt)\nprint(cmin)"
+  ],
+  [
+    "n,m,x=map(int,input().split())\nC=[]\nfor i in range(n):\n    a=list(map(int,input().split()))\n    C.append(a)\npattern=[]\ntoBuy=[]\nfor i in range(2**n):\n    toBuy=[]\n    for j in range(n):\n        if ((i>>j)&1):\n            toBuy.append(C[j])\n    pattern.append(toBuy)\nX=[0]*m \nxsum=0\nsum=0\nmin=12000000 \nfor tb in pattern:\n    sum=0\n    xsum=0\n    X=[0]*m\n    for c in tb:\n        for j in range(len(c)):\n            if j==0:\n                sum+=c[j]\n            else:\n                xsum+=c[j]\n                X[j-1]+=c[j]\n    if xsum<x*m:\n        continue\n    else:\n        for eX in X:\n            if eX<x:\n                check=1\n        if check==1:\n            check=0\n            continue\n        if sum<min:\n            min=sum\nif min==12000000:\n    print(-1)\nelse:\n    print(min)  \n"
+  ],
+  [
+    "import sys\nfrom collections import Counter\nsr = lambda: sys.stdin.readline().rstrip()\nir = lambda: int(sr())\nlr = lambda: list(map(int, sr().split()))\nN, M = lr()\nMOD = 10 ** 9 + 7\ndef prime_factorize(n): \n    a = []\n    while n % 2 == 0:\n        a.append(2)\n        n //= 2\n    f = 3\n    while f * f <= n:\n        if n % f == 0:\n            a.append(f)\n            n //= f\n        else:\n            f += 2\n    if n != 1:\n        a.append(n)\n    return a\ndef combination(n, x, mod=10**9+7):\n    factorial = [1] * (n+1)\n    t = 1\n    for i in range(1, n+1):\n        t = (t * i) % mod\n        factorial[i] = t\n    tmp = factorial[n]\n    tmp = (tmp * pow(factorial[x], mod-2, mod)) % mod\n    tmp = (tmp * pow(factorial[n-x], mod-2, mod)) % mod\n    return tmp\nA = prime_factorize(M)\ncounter = Counter(A)\nanswer = 1\nfor c in counter.values():\n    answer *= combination((N-1+c), c)\n    answer %= MOD\nprint(answer)\n"
+  ],
+  [
+    "n = int(input())\na = list(map(int,input().split()))\nm = 1000\nfor i in range(len(a)-1):\n    kabu = m//a[i]\n    if a[i] < a[i+1]:\n        m -= kabu*a[i]\n        m += a[i+1]*kabu\nprint(m)"
+  ],
+  [
+    "def solution():\n    user_input = input()\n    animals, legs = [int(x) for x in user_input.split()]\n    turtles = (4*animals - legs) / 2\n    condition = turtles >= 0 and turtles <= animals and turtles % 1 == 0 \n    if condition:\n        print(\"Yes\")\n    else:\n        print(\"No\")\nsolution()"
+  ],
+  [
+    "nums = list(map(int,input().split(' ')))\nnums.sort()\nif nums == [5,5,7]:\n  print('Yes')\nelse:\n  print('No')"
+  ],
+  [
+    "def main():\n    S = input().rstrip()\n    ans, l, r = 0, 0, len(S) - 1\n    while l < r:\n        if S[l] == S[r]:\n            l += 1\n            r -= 1\n        else:\n            ans += 1\n            if S[l] == \"x\":\n                l += 1\n            elif S[r] == \"x\":\n                r -= 1\n            else:\n                print(-1)\n                return\n    print(ans)\nif __name__ == \"__main__\":\n    main()"
+  ],
+  [
+    "N, M = map(int, input().split())\nE = [list(map(int, input().split())) for i in range(M)]\nC = [-float(\"inf\")] * (N+1)\nC[1] = 0\nfor i in range(N-1):\n    for e in E:\n        a, b, c = e\n        C[b] = max(C[b], C[a]+c)\nans = C[N]\nfor i in range(N):\n    for e in E:\n        a, b, c = e\n        C[b] = max(C[b], C[a]+c)\nif C[N] == ans:\n    print(ans)\nelse:\n    print(\"inf\")\n"
+  ],
+  [
+    "N, D = map(int, input().split())\nsee = 2*D+1\nif N%see==0:\n    ans = N/see\nelse:\n    ans = (N-(N%see))/see + 1\nprint(int(ans))"
+  ],
+  [
+    "a = [input().split()]\nt=0\nfor i in range(int(len(a)/2)):\n  if(a[i]==a[-(i+1)]):\n     t += 1\nprint(t)"
+  ],
+  [
+    "A, B = list(map(int, input().split()))\nK = (A + B) / 2\nif K == int(K):\n    print(int(K))\nelse:\n    print(\"IMPOSSIBLE\")\n"
+  ],
+  [
+    "import sys\nreadline = sys.stdin.readline\nN, K, C = map(int, readline().split())\nS = readline().rstrip()\nO = 'o'\nX = 'x'\nl2r = [None] * N\noffset = 0\ncount = 0\nwhile True:\n    i = offset\n    while i < N:\n        if S[i] == O:\n            offset = i + C + 1\n            l2r[i] = 1\n            count += 1\n            break\n        i += 1\n    if i >= N:\n        break\nif count > K:\n    exit(0)\nr2l = [None] * N\ncount = 0\noffset = N - 1\nwhile True:\n    i = offset\n    while i > -1:\n        if S[i] == O:\n            offset = i - C - 1\n            r2l[i] = 1\n            count += 1\n            break\n        i -= 1\n    if i <= -1:\n        break\nfor i in range(N):\n    if l2r[i] == 1 and r2l[i] == 1:\n        print(i + 1)"
+  ],
+  [
+    "n = int(input())\ns = input()\ns = list(s)\ncnt = 0\nfor i in range(n-2):\n  if s[i] == '.' and s[i+1] == '\n    s[i+1] = '.'\n    cnt+=1\n  if s[i] == '\n    s[i+1] = '\n    cnt+=1\nfor i in range(n-1):\n  if s[i] == '\n    s[i+1] = '\n    cnt+=1\nprint(cnt)"
+  ],
+  [
+    "def main():\n    import sys\n    sys.setrecursionlimit(10**7)\n    from itertools import accumulate, combinations, permutations, product \n    from math import factorial, ceil, floor, sqrt\n    def factorize(n):\n        fct = []  \n        b, e = 2, 0  \n        while b * b <= n:\n            while n % b == 0:\n                n = n // b\n                e = e + 1\n            if e > 0:\n                fct.append((b, e))\n            b, e = b + 1, 0\n        if n > 1:\n            fct.append((n, 1))\n        return fct\n    def combinations_count(n, r):\n        if n < 0 or r < 0:\n            raise Exception('combinations_count(n, r) not defined when n or r is negative')\n        if n - r < r: r = n - r\n        if r < 0: return 0\n        if r == 0: return 1\n        if r == 1: return n\n        numerator = [n - r + k + 1 for k in range(r)]\n        denominator = [k + 1 for k in range(r)]\n        for p in range(2,r+1):\n            pivot = denominator[p - 1]\n            if pivot > 1:\n                offset = (n - r) % p\n                for k in range(p-1,r,p):\n                    numerator[k - offset] /= pivot\n                    denominator[k] /= pivot\n        result = 1\n        for k in range(r):\n            if numerator[k] > 1:\n                result *= int(numerator[k])\n        return result\n    def combinations_with_replacement_count(n, r):\n        if n < 0 or r < 0:\n            raise Exception('combinations_with_replacement_count(n, r) not defined when n or r is negative')\n        elif n == 0:\n            return 1\n        else:\n            return combinations_count(n + r - 1, r)\n    from bisect import bisect_left, bisect_right\n    from collections import deque, Counter, defaultdict \n    from heapq import heapify, heappop, heappush, heappushpop, heapreplace,nlargest,nsmallest \n    from copy import deepcopy, copy \n    import operator\n    from operator import itemgetter \n    from functools import reduce, lru_cache\n    def chmin(x, y):\n        if x > y:\n            x = y\n            return (x, True)\n        else:\n            return (x, False)\n    def chmax(x, y):\n        if x < y:\n            x = y\n            return (x, True)\n        else:\n            return (x, False)\n    from fractions import gcd \n    def gcds(numbers):\n        return reduce(gcd, numbers)\n    def lcm(x, y):\n        return (x * y) // gcd(x, y)\n    def lcms(numbers):\n        return reduce(lcm, numbers, 1)\n    INF = 10 ** 18\n    MOD = 10 ** 9 + 7\n    modpow = lambda a, n, p = MOD: pow(a, n, p) \n    def modinv(a, p = MOD):\n        return modpow(a, p-2, p)\n    def modinv_list(n, p = MOD):\n        if n <= 1:\n            return [0,1][:n+1]\n        else:\n            inv_t = [0,1]\n            for i in range(2, n+1):\n                inv_t += [inv_t[p % i] * (p - int(p / i)) % p]\n            return inv_t\n    def modfactorial_list(n, p = MOD):\n        if n == 0:\n            return [1]\n        else:\n            l = [0] * (n+1)\n            tmp = 1\n            for i in range(1, n+1):\n                tmp = tmp * i % p\n                l[i] = tmp\n            return l\n    def modcomb(n, k, fac_list = [], p = MOD):\n        from math import factorial\n        if n < 0 or k < 0 or n < k: return 0\n        if n == 0 or k == 0: return 1\n        if len(fac_list) <= n:\n            a = factorial(n) % p\n            b = factorial(k) % p\n            c = factorial(n-k) % p\n        else:\n            a = fac_list[n]\n            b = fac_list[k]\n            c = fac_list[n-k]\n        return (a * modpow(b, p-2, p) * modpow(c, p-2, p)) % p\n    def modadd(a, b, p = MOD):\n        return (a + b) % MOD\n    def modsub(a, b, p = MOD):\n        return (a - b) % p\n    def modmul(a, b, p = MOD):\n        return ((a % p) * (b % p)) % p\n    def moddiv(a, b, p = MOD):\n        return modmul(a, modpow(b, p-2, p))\n    class UnionFindTree:\n        def __init__(self, N):\n            self.root = [-1] * (N+1)\n            self.rank   = [0]  * (N+1)\n            self.connected_num = [1] * (N+1)\n        def find_root(self,x):\n            root = self.root\n            while root[x] != -1:\n                x = root[x]\n            return x\n        def unite(self,x,y):\n            root = self.root\n            rank = self.rank\n            connected_num = self.connected_num\n            find_root = self.find_root\n            rx = find_root(x)\n            ry = find_root(y)\n            if rx != ry:\n                if rank[rx] < rank[ry]:\n                    root[rx] = ry\n                    rx,ry = ry,rx\n                else:\n                    if rank[rx] == rank[ry]:\n                        rank[rx] += 1\n                    root[ry] = rx       \n                connected_num[rx] += connected_num[ry]\n    r = lambda: sys.stdin.readline().strip()\n    r_int = lambda: int(r())\n    R = lambda: list(map(int, r().split()))\n    Rmap = lambda: map(int, r().split())\n    Rfloat = lambda: list(map(float, r().split()))\n    Rtuple = lambda: tuple(map(int, r().split()))\n    if __name__ != '__main__':\n        sys.stdin = open('sample.txt')\n    N, X = R()\n    A = [1] * 50\n    B = [1] * 50\n    for i in range(1, 50):\n        A[i] = 2 * A[i-1] + 3\n    for i in range(1, 50):\n        B[i] = 2 * B[i-1] + 1\n    @lru_cache(maxsize=None)\n    def burg(l, x):\n        if x == 1:\n            if l == 0:\n                return 1\n            return 0\n        elif x <= 1 + A[l-1]:\n            return 0 + burg(l-1, x-1)\n        elif x == 2 + A[l-1]:\n            return 1 + B[l-1]\n        elif x <= 2 + 2*A[l-1]:\n            return 1 + B[l-1] + burg(l-1, x-2-A[l-1])\n        else:\n            return B[l]\n    print(burg(N, X))\nif __name__ == '__main__':\n    main()"
+  ],
+  [
+    "import math\nN = int(input())\nTA = [list(map(int,input().split())) for _ in range(N)]\nt = TA[0][0]\na = TA[0][1]\nfor i in range(1,N):\n  x = max(math.ceil(t / TA[i][0]),math.ceil(a / TA[i][1]))\n  t = TA[i][0] * x\n  a = TA[i][1] * x\nprint(t + a)"
+  ],
+  [
+    "a, b, c = input()\nprint('Yes' if a == c else 'No')\n"
+  ],
+  [
+    "h1,m1,h2,m2,k = map(int,input().split())\nh = h2 - h1\nm = m2 - m1\nif m < 0:\n    h -= 1\n    m = 60 + m\ntime = h * 60 + m\nans = time // k\nans *= k\nprint(ans - k)"
+  ],
+  [
+    "N = int(input())\nAn = list(map(int, input().split()))\nAn.sort(reverse=True)\nanswer = 0\nt = N-1\nfor i, Ai in enumerate(An):\n    lim = 2\n    if i==0:\n        lim = 1\n    for j in range(lim):\n        if t > 0:\n            answer += Ai\n        t -= 1\nprint(answer)\n"
+  ]
+]

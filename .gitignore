@@ -6,6 +6,8 @@ backup/
 
 *.bin
 
+Output/*
+
 #*.arrow
 #*.json
 #*jsonl
