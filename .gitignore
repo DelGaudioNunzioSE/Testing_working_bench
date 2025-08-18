@@ -1,13 +1,13 @@
 __pycache__
 
 *.zip
-backup/
+*/backup/
 !Methods/utils/
 
 *.bin
 
 Output/*
-
+*-repo/
 #*.arrow
 #*.json
 #*jsonl
