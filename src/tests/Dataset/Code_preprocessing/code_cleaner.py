@@ -17,7 +17,7 @@ def comment_remover(code, language="Python"):
         )
         code = re.sub(pattern, '', code)
 
-    elif language in ("c", "cpp", "c++" "go"):  #cpp is an other way to say c++
+    elif language in ("c", "cpp", "c++", "go"):  #cpp is an other way to say c++
         pattern = re.compile(
             r'//.*?$'                     # single-line comment //
             r'|/\*.*?\*/'                 # multi-line comment /* ... */
@@ -96,6 +96,6 @@ def comment_remover(code, language="Python"):
 
 
     # FOR EVRY_LANGUAGE
-    code = re.sub(r'^\s*\n', '', code, flags=re.MULTILINE)
+    #code = re.sub(r'^\s*\n', '', code, flags=re.MULTILINE)
     
     return code
