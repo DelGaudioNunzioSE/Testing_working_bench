@@ -6,9 +6,12 @@ __pycache__
 
 *.bin
 *.csv
+*.json
+*.jsonl
+*.yaml
+.joblib
+*.bin
 Output/*
 *-repo/
-#*.arrow
-#*.json
-#*jsonl
-#*.csv
+*.arrow
+*.pkl
