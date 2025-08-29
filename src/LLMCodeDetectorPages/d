@@ -1,0 +1,62 @@
+SECTIONS = [
+    ("Total number of code samples available", [
+        ("(a) Total number of human code", "10,000"),
+        ("(b) Total number of LLMs code", "199,988"),
+    ]),
+    ("LLMs used to generate synthetic code", [
+        ("(a) Number of LLMs",
+         "10  LLMs: <em>(GPT-4o-mini, GPT-o3-mini, Qwen-2.5-Coder-32B, Claude-3.5-Haiku, "
+         "DeepSeek-R1, DeepSeek-V3, Gemini-2.0-Flash, Gemini-2.0-Flash-Thinking, "
+         "Gemini-2.0-Pro, Llama-3.3-70B)</em>"),
+        ("(b) Diversity among LLMs",
+         "6 different source models: <em>(GPT, CodeQwen, Claude, DeepSeek, Gemini, Llama)</em>"),
+        ("(c) Actual degree of use in contemporary times", "2024–2025"),
+    ]),
+    ("Code diversity", [
+        ("(a) Different programming languages",
+         "<em>(HTML, JavaScript, Java, C, Python, Ruby, Go, C#, C++, PHP)</em>"),
+        ("(b) Different types of code", "unspecified"),
+        ("(c) Code size", "1<sup>st</sup> percentile: 639 words, 3<sup>rd</sup> percentile: 804 words"),
+        ("(d) Code context", "open-source"),
+    ]),
+    ("Validity information", [
+        ("(a) Generation prompts", "Provided (one)"),
+        ("(b) Source of human-written code", "GitHub"),
+        ("(c) Code quality", "Statistical alignment"),
+        ("(d) Paper reliability perception",
+         "Medium, <em>(no precise references are provided regarding the data source)</em>"),
+    ]),
+]
+
+CSS = """
+<style>
+.cm-table { width:100%; border-collapse:collapse; table-layout: fixed; }
+.cm-table tr, .cm-table td, .cm-table th { border:1px solid #444; padding:8px; vertical-align:top; }
+th.section { background:#111; color:#fff; text-align:center; }
+.cm-note { text-align:center; margin-top:6px; font-size:13px; opacity:.8; }
+.cm-col-left { width: 50%; }
+.cm-col-right { width: 50%; }
+</style>
+"""
+
+def render_sections(sections):
+    rows = []
+    for title, items in sections:
+        rows.append(f'<tr><th class="section" colspan="2">{title}</th></tr>')
+        for left, right in items:
+            rows.append(f"<tr><td><b>{left}</b></td><td>{right}</td></tr>")
+    return "\n".join(rows)
+
+
+html = f"""
+{CSS}
+<table class="cm-table">
+{render_sections(SECTIONS)}
+</table>
+<div class="cm-note">Evaluation Summary: CodeMirage Dataset</div>
+"""
+
+
+
+with st.expander("Mostra dettagli dataset", expanded=False):
+    st.markdown(html, unsafe_allow_html=True)
