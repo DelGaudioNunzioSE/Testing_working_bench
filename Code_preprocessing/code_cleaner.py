@@ -6,9 +6,9 @@ def comment_remover(code, language="Python"):
         print('Input code is None')
         return
 
+    language = language.lower()
 
-
-    if language == "Python":
+    if language == "python":
         pattern = re.compile(     
             r'""".*?"""'                  # triple double-quoted string
             r"|'''.*?'''"                 # triple single-quoted string
@@ -17,7 +17,7 @@ def comment_remover(code, language="Python"):
         )
         code = re.sub(pattern, '', code)
 
-    elif language in ("C", "CPP", "Go"):
+    elif language in ("c", "cpp", "c++" "go"):  #cpp is an other way to say c++
         pattern = re.compile(
             r'//.*?$'                     # single-line comment //
             r'|/\*.*?\*/'                 # multi-line comment /* ... */
@@ -28,7 +28,7 @@ def comment_remover(code, language="Python"):
         )
         code = re.sub(pattern, lambda m: '' if m.group(0).startswith('/') else m.group(0), code)
 
-    elif language in ("CSharp", "C#"):
+    elif language in ("csharp", "c#"):
         pattern = re.compile(
             r'//.*?$'                     # single-line comment
             r'|/\*.*?\*/'                 # multi-line comment
@@ -39,7 +39,7 @@ def comment_remover(code, language="Python"):
         )
         code = re.sub(pattern, lambda m: '' if m.group(0).startswith('/') else m.group(0), code)
 
-    elif language == "Java":
+    elif language == "java":
         pattern = re.compile(
             r'/\*\*.*?\*/'                # Javadoc comment /** ... */
             r'|//.*?$'                    # single-line comment
@@ -51,7 +51,7 @@ def comment_remover(code, language="Python"):
         )
         code = re.sub(pattern, lambda m: '' if m.group(0).startswith('/') else m.group(0), code)
 
-    elif language == "JavaScript":
+    elif language == "javascript":
         pattern = re.compile(
             r'/\*\*.*?\*/'                # JSDoc comment /** ... */
             r'|//.*?$'                    # single-line comment
@@ -63,7 +63,7 @@ def comment_remover(code, language="Python"):
         )
         code = re.sub(pattern, lambda m: '' if m.group(0).startswith('/') else m.group(0), code)
 
-    elif language == "Ruby":
+    elif language == "ruby":
         # =begin / =end must be at the beginning of the line (no spaces before)
         pattern = re.compile(
             r'^=begin.*?^=end$'           # multi-line block comment
@@ -72,7 +72,7 @@ def comment_remover(code, language="Python"):
         )
         code = re.sub(pattern, '', code)
 
-    elif language == "PHP":
+    elif language == "php":
         pattern = re.compile(
             r'//.*?$'                     # single-line comment //
             r'|/\*.*?\*/'                 # multi-line comment /* ... */
@@ -81,7 +81,7 @@ def comment_remover(code, language="Python"):
         )
         code = re.sub(pattern, '', code)
 
-    elif language == "HTML":
+    elif language == "html":
         pattern = re.compile(
             r'<!--.*?-->', re.DOTALL # HTML comment <!-- ... -->
         )  

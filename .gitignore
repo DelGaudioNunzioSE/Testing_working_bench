@@ -5,7 +5,7 @@ __pycache__
 !Methods/utils/
 
 *.bin
-
+*.csv
 Output/*
 *-repo/
 #*.arrow
