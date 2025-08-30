@@ -19,7 +19,6 @@ with c1:
     st.markdown("""**CodeMirage:** is the test to evaluate:
 - Language generalization
 - LLMs Generalization
-- pharafrazed
 """)
 with c2:
     st.markdown('The work and dataset presented in the CodeMirage publication aim to evaluate ten\
@@ -121,7 +120,7 @@ with col2:
 col3, col4 = st.columns(2)
 
 with col3:
-    chart = CM.code()
+    chart = CM.status_in_folder()
     st.altair_chart(chart, use_container_width=True)
 
 with col4:

@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.tabel import render_summary_table
-from tests.Dataset.data import CodeMirage
+from tests.Dataset.data import AIG
 
 import altair as alt
 
@@ -19,6 +19,7 @@ with c1:
     st.markdown("""**AIGCodeSet:** is the test to evaluate:
 - competitive code evaluation
 - correct code vs wrong code evaluation
+- difference between difficulty 
 """)
 with c2:
     st.markdown('Unlike other works, this dataset includes both functional and non-\
@@ -83,13 +84,13 @@ st.text('To perform quick but indicative tests of code quality, a split of only 
 
 
 
-CM = CodeMirage(seed = 30, len_dataset=number)
-st.write(CM.head())
+A = AIG(seed = 30, len_dataset=number)
+st.write(A.head())
 
 
 
 
-csv_data = CM.convert_df_to_csv()
+csv_data = A.convert_df_to_csv()
 
 
 st.download_button(
@@ -106,11 +107,11 @@ st.download_button(
 col1, col2 = st.columns(2)
 
 with col1:
-    chart = CM.LLM_count()
+    chart = A.LLM_count('steelblue')
     st.altair_chart(chart, use_container_width=True)
 
 with col2:
-    chart= CM.language_count()
+    chart= A.language_count('royalblue')
     st.altair_chart(chart, use_container_width=True)
 
 
@@ -118,11 +119,11 @@ with col2:
 col3, col4 = st.columns(2)
 
 with col3:
-    chart = CM.code()
+    chart = A.status_in_folder('cornflowerblue')
     st.altair_chart(chart, use_container_width=True)
 
 with col4:
-    chart = CM.cleared_code()
+    chart = A.cleared_code('skyblue')
     st.altair_chart(chart, use_container_width=True)
 
 

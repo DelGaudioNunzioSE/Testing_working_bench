@@ -1,3 +1,4 @@
+from pathlib import Path
 from datasets import load_dataset, concatenate_datasets, Dataset
 from matplotlib import pyplot as plt
 import numpy as np
@@ -9,7 +10,81 @@ import altair as alt
 
 
 
-class CodeMirage():
+
+
+
+class dataset():
+    def __len__(self):
+        return len(self.DF)
+    
+    def head(self):
+        return self.DF.head()
+    
+    def LLM_count(self, color = 'FireBrick'):
+        count = self.DF['LLM'].value_counts()
+        df = pd.DataFrame({"count": count})
+        df = df.reset_index()
+        df.columns = ['LLM', 'count']
+        chart = alt.Chart(df, title='different code souce', height=400).mark_bar(color = color).encode(
+            x=alt.X('LLM:N', sort='-y', title='LLM'),
+            y=alt.Y('count:Q', title='Count'),
+            tooltip=['LLM', 'count']
+        )
+        return chart
+    
+    def language_count(self, color = 'Maroon'):
+        name = 'language'
+        count = self.DF[name].value_counts()
+        df = pd.DataFrame({"count": count})
+        df = df.reset_index()
+        df.columns = [name, 'count']
+        chart = alt.Chart(df, title='language', height=400).mark_bar(color = color).encode(
+            x=alt.X('language:N', sort='-y', title='language'),
+            y=alt.Y('count:Q', title='Count'),
+            tooltip=['language', 'count']
+        )
+        return chart
+    
+    def status_in_folder(self, color = 'Maroon'):
+        name = 'status_in_folder'
+        count = self.DF[name].value_counts()
+        df = pd.DataFrame({"count": count})
+        df = df.reset_index()
+        df.columns = [name, 'count']
+        chart = alt.Chart(df, title='status_in_folder', height=400).mark_bar(color = color).encode(
+            x=alt.X('status_in_folder:N', sort='-y', title='status in folder'),
+            y=alt.Y('count:Q', title='Count'),
+            tooltip=['status_in_folder', 'count']
+        )
+        return chart
+    
+
+
+    def cleared_code(self, color= 'Crimson'):
+        lenx = self.DF['cleared_code'].str.len()
+        df = pd.DataFrame({"len": lenx})
+        chart = alt.Chart(df, title='clean code length', height=400).mark_bar(color = color).encode(
+            x=alt.X("len:Q",
+                    bin=alt.Bin(step=20),          # o maxbins=30
+                    axis=alt.Axis(title="len", tickCount=10, labelAngle=0)),
+            y=alt.Y("count()", title="count")
+        )
+        return chart
+        #st.pyplot(fig)
+
+
+    def convert_df_to_csv(self):
+        return self.DF.to_csv(index=False).encode('utf-8')
+
+
+
+
+
+
+
+
+
+class CodeMirage(dataset):
 
     def __init__(self, len_dataset = 1000, seed = 30):
         dataset : Dataset  = load_dataset("HanxiGuo/CodeMirage")
@@ -47,73 +122,159 @@ class CodeMirage():
 
         dataset = dataset.filter(lambda x: x["code"] is not None and len(x["code"]) >= 10)
 
+
+        dataset = dataset.add_column('status_in_folder', [None] * len(dataset))
+        dataset = dataset.add_column('prompt', [None]*len(dataset))
+
+
         self.DF : pd.DataFrame = dataset.to_pandas()
         self.DF ['index'] = self.DF.index
-        self.DF = self.DF.reindex(columns=['LLM', 'language', 'code', 'cleared_code', 'index'])
+        self.DF = self.DF.reindex(columns=['LLM', 'language', 'status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
+        return
 
 
 
-    def __len__(self):
-        return len(self.Dataset)
-    
-    def head(self):
-        return self.DF.head()
-    
-    def LLM_count(self):
-        count = self.DF['LLM'].value_counts()
-        df = pd.DataFrame({"count": count})
-        df = df.reset_index()
-        df.columns = ['LLM', 'count']
-        chart = alt.Chart(df, title='different code souce', height=400).mark_bar(color = 'FireBrick').encode(
-            x=alt.X('LLM:N', sort='-y', title='LLM'),
-            y=alt.Y('count:Q', title='Count'),
-            tooltip=['LLM', 'count']
-        )
-        return chart
-    
-    def language_count(self):
-        name = 'language'
-        count = self.DF[name].value_counts()
-        df = pd.DataFrame({"count": count})
-        df = df.reset_index()
-        df.columns = [name, 'count']
-        chart = alt.Chart(df, title='language', height=400).mark_bar(color = 'Maroon').encode(
-            x=alt.X('language:N', sort='-y', title='language'),
-            y=alt.Y('count:Q', title='Count'),
-            tooltip=['language', 'count']
-        )
-        return chart
-    
-    def code(self):
-        lenx = self.DF['code'].str.len()
-        df = pd.DataFrame({"len": lenx})
 
-        chart = alt.Chart(df, title='code length', height=400).mark_bar(color='Tomato').encode(
-            x=alt.X("len:Q",
-                    bin=alt.Bin(step=20),          # o maxbins=30
-                    axis=alt.Axis(title="Lunghezza", tickCount=10, labelAngle=0)),
-            y=alt.Y("count()", title="Frequenza")
-        )
+
+
+class AIG(dataset):
+
+    def __init__(self, len_dataset = 1000, seed = 30):
+        dataset : Dataset  = load_dataset("basakdemirok/AIGCodeSet")
+        dataset = concatenate_datasets([dataset["train"], dataset["test"]])
+
+        dataset = dataset.shuffle(seed=seed)
         
-        return chart
-    
+
+        dataset = dataset.remove_columns(['problem_id', 'submission_id', 'ada_embedding', 'label', 'lines', 'code_lines', 'comments', 'functions', 'blank_lines'])
 
 
-    def cleared_code(self):
-        lenx = self.DF['cleared_code'].str.len()
-        df = pd.DataFrame({"len": lenx})
-        chart = alt.Chart(df, title='clean code length', height=400).mark_bar(color = 'Crimson').encode(
-            x=alt.X("len:Q",
-                    bin=alt.Bin(step=20),          # o maxbins=30
-                    axis=alt.Axis(title="Lunghezza", tickCount=10, labelAngle=0)),
-            y=alt.Y("count()", title="Frequenza")
-        )
-        return chart
-        #st.pyplot(fig)
+        not_human = dataset.filter(lambda x: x["LLM"] != "Human" )
+        not_human = balanced_sample_multi_cols(not_human, 
+                                               cols=("status_in_folder","LLM"), 
+                                               desired_n=len_dataset//2, 
+                                               seed=seed)
+        
+
+        human = dataset.filter(lambda x: x["LLM"] == "Human" )
+        human = balanced_sample_multi_cols(human, 
+                                           cols=("status_in_folder","LLM"), 
+                                           desired_n=len_dataset//2, 
+                                           seed=seed)
+        
 
 
-    def convert_df_to_csv(self):
-        return self.DF.to_csv(index=False).encode('utf-8')
+        dataset =concatenate_datasets([human, not_human])
+        
+        all_codes = [comment_remover(x, 'python') for x in dataset["code"]]
+        dataset = dataset.add_column("cleared_code", all_codes)
+
+        dataset = dataset.filter(lambda x: x["code"] is not None and len(x["code"]) >= 10)
+
+
+        dataset = dataset.add_column('language', ['python']*len(dataset))
+
+
+
+        self.DF : pd.DataFrame = dataset.to_pandas()
+        self.DF ['index'] = self.DF.index
+        self.DF = self.DF.reindex(columns=['LLM', 'language','status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
+        return
+
+
+
+
+
+
+
+
+
+
+
+
+class Pan(dataset):
+
+    def __init__(self, len_dataset = 1000, seed = 30):
+        HERE = Path(__file__).resolve().parent
+        ROOT = HERE.parents[1]
+        CSV  = ROOT / "tests" / "Dataset" / "Pan" / "pan.csv"
+        CSV_final  = ROOT / "tests" / "Dataset" / "Pan" / "pan_final.csv"
+
+
+        original = pd.read_csv(CSV, index_col="local index")
+        processed   = pd.read_csv(CSV_final,  index_col="metadata.local index")
+        
+        if len(original) == 0 or len(processed) == 0:
+            raise FileNotFoundError()
+        human_conl = "Python Code"
+        out = processed.join(original[[human_conl]], how="inner")  # aggiunge la colonna a 'short' per indice
+        print(len(out))
+
+        dataset : Dataset  = Dataset.from_pandas(out)
+
+
+        dataset = dataset.shuffle(seed=seed)
+        
+
+        dataset = dataset.remove_columns(['file_source', 'metadata.index', 'metadata.Source Name', 'metadata.GPT Answer', 'test_result.errors' ,'test_result.failed', 'test_result.test_reliability',\
+                                          'metadata.test_folder_name', 'metadata.variant', "test_code"])
+
+
+        dataset = dataset.filter(lambda x: x["solution_code"] is not None and len(x["solution_code"]) >= 10)
+
+
+        dataset = dataset.add_column('language', ['python']*len(dataset))
+
+
+        ds_a = dataset.remove_columns(["solution_code"]).rename_column("Python Code",'code')
+        print(ds_a)
+        ds_a = ds_a.map(lambda batch: {'test_result.passed': [-1] * len(batch['test_result.passed'])}, batched=True)
+        ds_b = dataset.remove_columns(["Python Code"]).rename_column("solution_code",'code')
+        ds_a = ds_a.add_column('LLM', ['Human']*len(ds_a))
+        ds_b = ds_b.add_column('LLM', ['GPT']*len(ds_a))
+
+
+        dataset = concatenate_datasets([ds_a, ds_b])
+
+
+        all_codes = [comment_remover(x, 'python') for x in dataset["code"]]
+        dataset = dataset.add_column("cleared_code", all_codes)
+
+
+
+        dataset = dataset.rename_column('metadata.local index', 'index' )
+        dataset = dataset.rename_column('instruction' ,'prompt')
+        dataset = dataset.rename_column('test_result.passed' ,'status_in_folder')
+
+        def status(x):
+            if x['status_in_folder'] == -1:
+                y = 'Not tested'
+            elif x['status_in_folder'] == 3:
+                y = 'Accepted'
+            else :
+                y = 'wrong'
+
+            return {'status_in_folder': y}
+        
+        dataset = dataset.map(status)
+
+
+        dataset = balanced_sample_multi_cols(dataset, 
+                                    cols=("LLM", "status_in_folder"), 
+                                    desired_n=len_dataset, 
+                                    seed=seed)
+
+
+        self.DF : pd.DataFrame = dataset.to_pandas()
+        self.DF ['index'] = self.DF.index
+        #print(self.DF.head())
+        self.DF = self.DF.reindex(columns=['LLM', 'language','status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
+        
+        return
+
+
+
+
     
 
 
