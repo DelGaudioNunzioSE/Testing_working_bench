@@ -15,3 +15,6 @@ Output/*
 *-repo/
 *.arrow
 *.pkl
+.dockerignore
+Dockerfile
+*.tar

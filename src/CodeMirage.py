@@ -72,7 +72,8 @@ with c2 :
         step=1000                  # incremento predefinito
     )
 st.text('To perform quick but indicative tests of code quality, a split of only 1000 code samples\
-(500 human and 500 LLM) was taken, while maintaining language balance as much as possible.')
+(500 human and 500 LLM) was taken, while maintaining language balance as much as possible.\n\
+you can take any split you want.')
 
 
 
@@ -84,48 +85,48 @@ st.text('To perform quick but indicative tests of code quality, a split of only 
 
 
 
-
-CM = CodeMirage(seed = 30, len_dataset=number)
-st.write(CM.head())
-
-
-
-
-csv_data = CM.convert_df_to_csv()
-
-
-st.download_button(
-    label="Download like CSV",
-    data=csv_data,
-    file_name="CodeMirage.csv",
-    mime="text/csv",
-    icon="📁",
-    width="stretch"
-)
+with st.spinner("Creating Subset ..."):
+    CM = CodeMirage(seed = 30, len_dataset=number)
+    st.write(CM.head())
 
 
 
-col1, col2 = st.columns(2)
-
-with col1:
-    chart = CM.LLM_count()
-    st.altair_chart(chart, use_container_width=True)
-
-with col2:
-    chart= CM.language_count()
-    st.altair_chart(chart, use_container_width=True)
 
 
+    csv_data = CM.convert_df_to_csv()
 
-col3, col4 = st.columns(2)
 
-with col3:
-    chart = CM.status_in_folder()
-    st.altair_chart(chart, use_container_width=True)
+    st.download_button(
+        label="Download like CSV",
+        data=csv_data,
+        file_name="CodeMirage.csv",
+        mime="text/csv",
+        icon="📁",
+        width="stretch"
+    )
 
-with col4:
-    chart = CM.cleared_code()
-    st.altair_chart(chart, use_container_width=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        chart = CM.LLM_count()
+        st.altair_chart(chart, use_container_width=True)
+
+    with col2:
+        chart= CM.language_count()
+        st.altair_chart(chart, use_container_width=True)
+
+
+
+    col3, col4 = st.columns(2)
+
+    with col3:
+        chart = CM.status_in_folder()
+        st.altair_chart(chart, use_container_width=True)
+
+    with col4:
+        chart = CM.cleared_code()
+        st.altair_chart(chart, use_container_width=True)
 
 
 

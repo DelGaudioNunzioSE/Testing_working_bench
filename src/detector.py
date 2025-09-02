@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     c1, c2, c3 = st.columns([2,1,2])
     with c2:
-        if st.button("Test"):
+        if st.button("GO"):
             st.session_state["submitted"] = True
             st.session_state["code"] = code
             st.session_state["lang"] = lang
@@ -100,12 +100,12 @@ else:
 
     def compute_probability(code: str, lang: str) -> float:
         # TODO: rimpiazza con la tua logica
-        return min(1.0, max(0.0, len(code) % 101 / 100))  # demo
+        return 1
 
     prob = compute_probability(st.session_state["code"], st.session_state["lang"])
 
     st.metric("LLM Probability", f"{prob:.2%}")
-    st.progress(min(max(prob, 0.0), 1.0))
+    st.progress(float(prob))
 
 
 

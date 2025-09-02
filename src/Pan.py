@@ -62,7 +62,8 @@ with c2 :
         "Insert the dimension of the dataset that you prefer",  # etichetta
         min_value=100,            # valore minimo (opzionale)
         max_value=272,          # max value
-        step=50                  # incremento predefinito
+        step=50,                  # incremento predefinito
+        value= 250
     )
 
 link_url = "https://github.com/DelGaudioNunzioSE/LLM-CodeTester"  # cambia qui
@@ -71,6 +72,7 @@ st.markdown(
     f'A subset of code from the original dataset was extracted and tested using the <a href="{link_url}" target="_blank">framework</a>.',
     unsafe_allow_html=True,
 )
+st.text('you can take any split you want.')
 
 
 
@@ -82,48 +84,48 @@ st.markdown(
 
 
 
-
-P = Pan(seed = 30, len_dataset=number)
-st.write(P.head())
-
-
-
-
-csv_data = P.convert_df_to_csv()
-
-
-st.download_button(
-    label="Download like CSV",
-    data=csv_data,
-    file_name="Sun.csv",
-    mime="text/csv",
-    icon="📁",
-    width="stretch"
-)
+with st.spinner("Creating Subset ..."):
+    P = Pan(seed = 30, len_dataset=number)
+    st.write(P.head())
 
 
 
-col1, col2 = st.columns(2)
 
-with col1:
-    chart = P.LLM_count('seagreen')
-    st.altair_chart(chart, use_container_width=True)
-
-with col2:
-    chart= P.language_count('mediumaquamarine')
-    st.altair_chart(chart, use_container_width=True)
+    csv_data = P.convert_df_to_csv()
 
 
+    st.download_button(
+        label="Download like CSV",
+        data=csv_data,
+        file_name="Sun.csv",
+        mime="text/csv",
+        icon="📁",
+        width="stretch"
+    )
 
-col3, col4 = st.columns(2)
 
-with col3:
-    chart = P.status_in_folder('springgreen')
-    st.altair_chart(chart, use_container_width=True)
 
-with col4:
-    chart = P.cleared_code('darkolivegreen')
-    st.altair_chart(chart, use_container_width=True)
+    col1, col2 = st.columns(2)
+
+    with col1:
+        chart = P.LLM_count('seagreen')
+        st.altair_chart(chart, use_container_width=True)
+
+    with col2:
+        chart= P.language_count('mediumaquamarine')
+        st.altair_chart(chart, use_container_width=True)
+
+
+
+    col3, col4 = st.columns(2)
+
+    with col3:
+        chart = P.status_in_folder('springgreen')
+        st.altair_chart(chart, use_container_width=True)
+
+    with col4:
+        chart = P.cleared_code('darkolivegreen')
+        st.altair_chart(chart, use_container_width=True)
 
 
 

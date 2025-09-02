@@ -68,10 +68,12 @@ with c2 :
         "Insert the dimension of the dataset that you prefer",  # etichetta
         min_value=100,            # valore minimo (opzionale)
         max_value=1000,          # max value
-        step=100                  # incremento predefinito
+        step=100,                  # incremento predefinito
+        value=1000
     )
 st.text('To perform quick but indicative tests of code quality, a split of only 1000 code samples\
-(500 human and 500 LLM) was taken, while maintaining language balance as much as possible.')
+(500 human and 500 LLM) was taken, while maintaining language balance as much as possible.\n\
+you can take any split you want.')
 
 
 
@@ -83,48 +85,48 @@ st.text('To perform quick but indicative tests of code quality, a split of only 
 
 
 
-
-A = AIG(seed = 30, len_dataset=number)
-st.write(A.head())
-
-
-
-
-csv_data = A.convert_df_to_csv()
-
-
-st.download_button(
-    label="Download like CSV",
-    data=csv_data,
-    file_name="AIGCodeSet.csv",
-    mime="text/csv",
-    icon="📁",
-    width="stretch"
-)
+with st.spinner("Creating Subset ..."):
+    A = AIG(seed = 30, len_dataset=number)
+    st.write(A.head())
 
 
 
-col1, col2 = st.columns(2)
 
-with col1:
-    chart = A.LLM_count('steelblue')
-    st.altair_chart(chart, use_container_width=True)
-
-with col2:
-    chart= A.language_count('royalblue')
-    st.altair_chart(chart, use_container_width=True)
+    csv_data = A.convert_df_to_csv()
 
 
+    st.download_button(
+        label="Download like CSV",
+        data=csv_data,
+        file_name="AIGCodeSet.csv",
+        mime="text/csv",
+        icon="📁",
+        width="stretch"
+    )
 
-col3, col4 = st.columns(2)
 
-with col3:
-    chart = A.status_in_folder('cornflowerblue')
-    st.altair_chart(chart, use_container_width=True)
 
-with col4:
-    chart = A.cleared_code('skyblue')
-    st.altair_chart(chart, use_container_width=True)
+    col1, col2 = st.columns(2)
+
+    with col1:
+        chart = A.LLM_count('steelblue')
+        st.altair_chart(chart, use_container_width=True)
+
+    with col2:
+        chart= A.language_count('royalblue')
+        st.altair_chart(chart, use_container_width=True)
+
+
+
+    col3, col4 = st.columns(2)
+
+    with col3:
+        chart = A.status_in_folder('cornflowerblue')
+        st.altair_chart(chart, use_container_width=True)
+
+    with col4:
+        chart = A.cleared_code('skyblue')
+        st.altair_chart(chart, use_container_width=True)
 
 
 
