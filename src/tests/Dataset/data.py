@@ -2,18 +2,22 @@ from pathlib import Path
 from datasets import load_dataset, concatenate_datasets, Dataset
 from matplotlib import pyplot as plt
 import numpy as np
-from tests.Dataset.Code_preprocessing.code_cleaner import comment_remover
+from tests.Dataset.Code_preprocessing.code_cleaner import comment_remover, newline_remover, import_remover
 from tests.Dataset.Code_preprocessing.balance_dataset import balanced_sample_multi_cols
 import pandas as pd
 
 import altair as alt
 
+from sklearn.model_selection import train_test_split
 
 
 
 
 
 class dataset():
+    def __init__(self, seed=30):
+        self.seed = seed
+
     def __len__(self):
         return len(self.DF)
     
@@ -71,10 +75,17 @@ class dataset():
         )
         return chart
         #st.pyplot(fig)
+    
+
 
 
     def convert_df_to_csv(self):
         return self.DF.to_csv(index=False).encode('utf-8')
+    
+    def convert_df_to_csv_split(self):
+        train, test = train_test_split(self.DF, test_size=0.10, random_state=42, stratify=self.DF["label"])
+        train, val  = train_test_split(train, test_size=0.1111, random_state=42, stratify=train["label"])
+        return train.to_csv(index=False).encode('utf-8'), val.to_csv(index=False).encode('utf-8'), test.to_csv(index=False).encode('utf-8')
 
 
 
@@ -87,10 +98,11 @@ class dataset():
 class CodeMirage(dataset):
 
     def __init__(self, len_dataset = 1000, seed = 30):
+        super().__init__(seed)
         dataset : Dataset  = load_dataset("HanxiGuo/CodeMirage")
         dataset = concatenate_datasets([dataset["train"], dataset["test"]])
 
-        dataset = dataset.shuffle(seed=seed)
+        dataset = dataset.shuffle(seed=self.seed)
 
         dataset = dataset.rename_column(original_column_name= "source", 
                                         new_column_name="LLM") # old name -> new name
@@ -104,20 +116,20 @@ class CodeMirage(dataset):
         not_human = balanced_sample_multi_cols(not_human, 
                                                cols=("language","LLM"), 
                                                desired_n=len_dataset//2, 
-                                               seed=seed)
+                                               seed=self.seed)
         
 
         human = dataset.filter(lambda x: x["LLM"] == "Human" )
         human = balanced_sample_multi_cols(human, 
                                            cols=("language","LLM"), 
                                            desired_n=len_dataset//2, 
-                                           seed=seed)
+                                           seed=self.seed)
         
 
 
         dataset =concatenate_datasets([human, not_human])
         
-        all_codes = [comment_remover(x, language) for x, language in zip(dataset["code"], dataset["language"])]
+        all_codes = [import_remover(comment_remover(x, language), language)  for x, language in zip(dataset["code"], dataset["language"])]
         dataset = dataset.add_column("cleared_code", all_codes)
 
         dataset = dataset.filter(lambda x: x["code"] is not None and len(x["code"]) >= 10)
@@ -127,9 +139,21 @@ class CodeMirage(dataset):
         dataset = dataset.add_column('prompt', [None]*len(dataset))
 
 
+
+        def add_label(x):
+            if x['LLM'] == 'Human':
+                y = 0
+            else :
+                y = 1
+
+            return {'label': y}
+        
+        dataset = dataset.map(add_label)
+
+
         self.DF : pd.DataFrame = dataset.to_pandas()
         self.DF ['index'] = self.DF.index
-        self.DF = self.DF.reindex(columns=['LLM', 'language', 'status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
+        self.DF = self.DF.reindex(columns=['label', 'LLM', 'language', 'status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
         return
 
 
@@ -140,10 +164,11 @@ class CodeMirage(dataset):
 class AIG(dataset):
 
     def __init__(self, len_dataset = 1000, seed = 30):
+        super().__init__(seed)
         dataset : Dataset  = load_dataset("basakdemirok/AIGCodeSet")
         dataset = concatenate_datasets([dataset["train"], dataset["test"]])
 
-        dataset = dataset.shuffle(seed=seed)
+        dataset = dataset.shuffle(seed=self.seed)
         
 
         dataset = dataset.remove_columns(['problem_id', 'submission_id', 'ada_embedding', 'label', 'lines', 'code_lines', 'comments', 'functions', 'blank_lines'])
@@ -153,20 +178,20 @@ class AIG(dataset):
         not_human = balanced_sample_multi_cols(not_human, 
                                                cols=("status_in_folder","LLM"), 
                                                desired_n=len_dataset//2, 
-                                               seed=seed)
+                                               seed=self.seed)
         
 
         human = dataset.filter(lambda x: x["LLM"] == "Human" )
         human = balanced_sample_multi_cols(human, 
                                            cols=("status_in_folder","LLM"), 
                                            desired_n=len_dataset//2, 
-                                           seed=seed)
+                                           seed=self.seed)
         
 
 
         dataset =concatenate_datasets([human, not_human])
         
-        all_codes = [comment_remover(x, 'python') for x in dataset["code"]]
+        all_codes = [import_remover(comment_remover(x, 'python'),'python') for x in dataset["code"]]
         dataset = dataset.add_column("cleared_code", all_codes)
 
         dataset = dataset.filter(lambda x: x["code"] is not None and len(x["code"]) >= 10)
@@ -176,9 +201,21 @@ class AIG(dataset):
 
 
 
+        def add_label(x):
+            if x['LLM'] == 'Human':
+                y = 0
+            else :
+                y = 1
+
+            return {'label': y}
+        
+        dataset = dataset.map(add_label)
+
+
+
         self.DF : pd.DataFrame = dataset.to_pandas()
         self.DF ['index'] = self.DF.index
-        self.DF = self.DF.reindex(columns=['LLM', 'language','status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
+        self.DF = self.DF.reindex(columns=['label', 'LLM', 'language','status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
         return
 
 
@@ -195,6 +232,7 @@ class AIG(dataset):
 class Pan(dataset):
 
     def __init__(self, len_dataset = 1000, seed = 30):
+        super().__init__(seed)
         HERE = Path(__file__).resolve().parent
         ROOT = HERE.parents[1]
         CSV  = ROOT / "tests" / "Dataset" / "Pan" / "pan.csv"
@@ -213,7 +251,7 @@ class Pan(dataset):
         dataset : Dataset  = Dataset.from_pandas(out)
 
 
-        dataset = dataset.shuffle(seed=seed)
+        dataset = dataset.shuffle(seed=self.seed)
         
 
         dataset = dataset.remove_columns(['file_source', 'metadata.index', 'metadata.Source Name', 'metadata.GPT Answer', 'test_result.errors' ,'test_result.failed', 'test_result.test_reliability',\
@@ -238,6 +276,7 @@ class Pan(dataset):
 
 
         all_codes = [comment_remover(x, 'python') for x in dataset["code"]]
+        all_codes = [import_remover(x, 'python') for x in dataset["code"]]
         dataset = dataset.add_column("cleared_code", all_codes)
 
 
@@ -262,13 +301,25 @@ class Pan(dataset):
         dataset = balanced_sample_multi_cols(dataset, 
                                     cols=("LLM", "status_in_folder"), 
                                     desired_n=len_dataset, 
-                                    seed=seed)
+                                    seed=self.seed)
+        
+
+
+        def add_label(x):
+            if x['LLM'] == 'Human':
+                y = 0
+            else :
+                y = 1
+
+            return {'label': y}
+        
+        dataset = dataset.map(add_label)
 
 
         self.DF : pd.DataFrame = dataset.to_pandas()
         self.DF ['index'] = self.DF.index
         #print(self.DF.head())
-        self.DF = self.DF.reindex(columns=['LLM', 'language','status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
+        self.DF = self.DF.reindex(columns=['label', 'LLM', 'language','status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
         
         return
 

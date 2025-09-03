@@ -94,6 +94,7 @@ with st.spinner("Creating Subset ..."):
 
 
     csv_data = CM.convert_df_to_csv()
+    csv_train, csv_val, csv_test = CM.convert_df_to_csv_split()
 
 
     st.download_button(
@@ -105,6 +106,33 @@ with st.spinner("Creating Subset ..."):
         width="stretch"
     )
 
+
+
+    col1, col2, col3 = st.columns([5, 1, 1], border=False)
+    with col1:
+        st.download_button(
+            label="train_split",
+            data=csv_train,
+            file_name="CodeMirage_train.csv",
+            mime="text/csv",
+            width="stretch"
+        )
+    with col2:
+        st.download_button(
+            label="val_split",
+            data=csv_val,
+            file_name="CodeMirage_val.csv",
+            mime="text/csv",
+            width="stretch"
+        )
+    with col3:
+        st.download_button(
+            label="test_split",
+            data=csv_test,
+            file_name="CodeMirage_test.csv",
+            mime="text/csv",
+            width="stretch"
+        )
 
     col1, col2 = st.columns(2)
 

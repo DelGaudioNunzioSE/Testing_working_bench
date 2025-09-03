@@ -92,12 +92,13 @@ with st.spinner("Creating Subset ..."):
 
 
     csv_data = P.convert_df_to_csv()
+    csv_train, csv_val, csv_test = P.convert_df_to_csv_split()
 
 
     st.download_button(
         label="Download like CSV",
         data=csv_data,
-        file_name="Sun.csv",
+        file_name="Pan.csv",
         mime="text/csv",
         icon="📁",
         width="stretch"
