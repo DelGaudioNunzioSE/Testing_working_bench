@@ -34,7 +34,7 @@ from sklearn.metrics import accuracy_score
 # Define the tokenizer and the model ##############################################################
 
 class CodeT5pClassifier(nn.Module):
-    def __init__(self, model_name="Salesforce/codet5p-220m", num_labels=2, dropout=0.1):
+    def __init__(self, model_name="/home/N.DELGAUDIO5/hugging/codet5p-220m-local", num_labels=2, dropout=0.1):
         super().__init__()
         self.enc = T5EncoderModel.from_pretrained(model_name)
         hidden = self.enc.config.d_model          # dimensione embedding dal config
@@ -51,8 +51,10 @@ class CodeT5pClassifier(nn.Module):
             loss = nn.CrossEntropyLoss()(logits, labels)
         return {"loss": loss, "logits": logits}
     
+
+
     def input_tokenizer(self, code):
-        tokenizer =  AutoTokenizer.from_pretrained("Salesforce/codet5p-220m", use_fast=True)
+        tokenizer =  AutoTokenizer.from_pretrained("/home/N.DELGAUDIO5/hugging/codet5p-220m-local",  use_fast=True)
         inputs = self.tokenizer.encode_plus(
             code,
             padding='max_length',   # sequenza fissa

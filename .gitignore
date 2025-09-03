@@ -18,3 +18,7 @@ Output/*
 .dockerignore
 Dockerfile
 *.tar
+LLL
+checkpoint*/
+*.png
+*.out
