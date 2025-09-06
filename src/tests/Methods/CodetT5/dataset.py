@@ -17,9 +17,8 @@ from sklearn.metrics import accuracy_score
 
 
 class CodeDataset(Dataset):
-    def __init__(self, csv_path, text_col="cleared_code", label_col="label", tokenizer =  AutoTokenizer.from_pretrained("/home/N.DELGAUDIO5/hugging/codet5p-220m-local", use_fast=True) ):
+    def __init__(self, df, text_col="cleared_code", label_col="label", tokenizer =  AutoTokenizer.from_pretrained("/home/N.DELGAUDIO5/hugging/codet5p-220m-local", use_fast=True) ):
         self.tokenizer = tokenizer
-        df = pd.read_csv(csv_path)
         # opzionale: filtra righe valide
         df = df.dropna(subset=[text_col, label_col])
         self.codes = df[text_col].astype(str).tolist()
