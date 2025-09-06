@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split
 class dataset():
     def __init__(self, seed=30):
         self.seed = seed
+        self.DF :pd.DataFrame = None
 
     def __len__(self):
         return len(self.DF)
@@ -327,5 +328,68 @@ class Pan(dataset):
 
 
     
+class CoDETM4(dataset):
 
+    def __init__(self, len_dataset = 10000, seed = 30):
+        super().__init__(seed)
+        dataset : Dataset  = load_dataset("DaniilOr/CoDET-M4", split=f"train")
+
+        #dataset = dataset["train"]
+
+        dataset = dataset.shuffle(seed=self.seed)
+
+        dataset = dataset.rename_column(original_column_name= "model", 
+                                        new_column_name="LLM") # old name -> new name
+        
+
+        dataset = dataset.remove_columns('features')
+        dataset = dataset.remove_columns('source')
+
+
+
+
+        not_human = dataset.filter(lambda x: x["LLM"] != "human" )
+
+        not_human = balanced_sample_multi_cols(not_human, 
+                                               cols=("LLM", "language"), 
+                                               desired_n=len_dataset//2, 
+                                               seed=self.seed)
+        
+
+        human = dataset.filter(lambda x: x["LLM"] == "human" )
+
+        human = balanced_sample_multi_cols(human, 
+                                           cols=("LLM", "language"), 
+                                           desired_n=len_dataset//2, 
+                                           seed=self.seed)
+        
+
+
+        dataset =concatenate_datasets([human, not_human])
+        
+        all_codes = [import_remover(comment_remover(x, language), language)  for x, language in zip(dataset["code"], dataset["language"])]
+        dataset = dataset.add_column("cleared_code", all_codes)
+
+
+
+        dataset = dataset.add_column('status_in_folder', [None] * len(dataset))
+        dataset = dataset.add_column('prompt', [None]*len(dataset))
+
+
+
+        def add_label(x):
+            if x['LLM'] == 'human':
+                y = 0
+            else :
+                y = 1
+
+            return {'label': y}
+        
+        dataset = dataset.map(add_label)
+
+
+        self.DF : pd.DataFrame = dataset.to_pandas()
+        self.DF ['index'] = self.DF.index
+        self.DF = self.DF.reindex(columns=['label', 'LLM', 'language', 'status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
+        return
 

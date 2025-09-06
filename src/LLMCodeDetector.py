@@ -24,6 +24,7 @@ BASE = Path(__file__).parent
 why_rel    = os.path.relpath(BASE / "why.py", start=BASE)
 det_rel     = os.path.relpath(BASE / "detector.py", start=BASE)
 codemirage_rel = os.path.relpath(BASE / "CodeMirage.py", start=BASE)
+coDET_rel = os.path.relpath(BASE / "CoDETM4.py", start=BASE)
 AIG_rel = os.path.relpath(BASE / "AIGCodeSet.py", start=BASE)
 Pan_rel = os.path.relpath(BASE / "Pan.py", start=BASE)
 
@@ -32,13 +33,14 @@ Pan_rel = os.path.relpath(BASE / "Pan.py", start=BASE)
 why     = st.Page(why_rel, title="Why a LLM Code Detector", icon="❔")
 detector_page = st.Page(det_rel, title="Detector", icon="🕵️‍♂️")
 codemirage_page = st.Page(codemirage_rel, title="CodeMirage", icon="📊")
+coDET_page = st.Page(coDET_rel, title="CoDET-M4", icon="📊")
 AIG_rel_page = st.Page(AIG_rel, title="AIGCodeSet", icon="📊")
 Pan_rel_page = st.Page(Pan_rel, title="Pan", icon="📊")
 
 # Costruisci il menu con sezioni
 pages = {
     "Home": [detector_page, why],
-    "Datasets": [codemirage_page, AIG_rel_page, Pan_rel_page] # <-- CodeMirage come sottopagina
+    "Datasets": [codemirage_page, AIG_rel_page, Pan_rel_page, coDET_page] # <-- CodeMirage come sottopagina
 }
 pg = st.navigation(pages, position='top')
 
