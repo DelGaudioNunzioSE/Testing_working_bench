@@ -2,31 +2,33 @@ import os
 import streamlit as st
 import numpy as np
 import pandas as pd
-import io
-import contextlib
-import time
+from code_editor import code_editor
+import plotly.graph_objects as go
+
 
 st.title('LLM Code Detector') #set title's app
 
 
 
 
-# Init stato
-if "submitted" not in st.session_state:
-    st.session_state["submitted"] = False
-    st.session_state["code"] = ""
-    st.session_state["lang"] = "python"
 
 
 
 
 
-if not st.session_state["submitted"]:
+
+# HOOK function
+def compute_probability(code: str, lang: str) -> float:
+    # TODO: rimpiazza con la tua logica
+    return 100
 
 
-    code = st.text_area(
-    "Write your code here:", 
-    value="""# ============================================
+
+
+
+
+
+value="""# ============================================
 # Generated automatically by a large language model
 # Purpose: Demonstrate an extremely verbose
 #          implementation of Hello World in Python
@@ -58,62 +60,84 @@ def output_message(msg: str):
 # Standard LLM boilerplate to ensure execution
 if __name__ == "__main__":
     main()
-""",   # testo predefinito
-    height=800
-)
-
-    st.caption("Otherwise upload the file")
-    uploaded_file = st.file_uploader("Upload file (.py o .c)", type=["py","c"], label_visibility="collapsed")
-    
-
-
-    
-
-    lang = "python"
-    if uploaded_file is not None:
-        code = uploaded_file.read().decode("utf-8")
-        ext = os.path.splitext(uploaded_file.name)[1].lower() # aware the code type from the file
-        if ext == ".c":
-            lang = "c"
-
-    c1, c2, c3 = st.columns([2,1,2])
-    with c2:
-        if st.button("GO"):
-            st.session_state["submitted"] = True
-            st.session_state["code"] = code
-            st.session_state["lang"] = lang
-            st.rerun()
+"""
 
 
 
+c1, c2 = st.columns([4,1], vertical_alignment="center")
+with c1:
 
+    lang = st.selectbox("Lang", ["python", "java"])
 
-else:
+    editor_btns = [{
+    "name": "Run",
+    "feather": "Play",
+    "primary": True,
+    "hasText": True,
+    "showWithIcon": True,
+    "commands": ["submit"],
+    "style": {"bottom": "0.44rem", "right": "0.4rem"}
+    }]
+
+    resp = code_editor(code = value, 
+                        lang=lang, 
+                        key="editor", 
+                        theme="monokai", 
+                        height = [10, 15],
+                        allow_reset=True,
+                        buttons=editor_btns)
+
+with c2:
     # --- output ---
     with st.spinner("Elaboration..."):
-        result = st.session_state["code"]  # HOOK <---------------
+
+        prob = compute_probability(resp, lang) # <------- HOOK
+
+        label = "LLM" if prob > 50 else "human"
+        color = "tomato" if prob > 50 else "mediumturquoise"
+
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=prob,
+            number={'suffix': f" {label}"},
+            gauge={
+                'axis': {'range': [0, 100]},
+                'bar': {'color': color},
+                'steps': [
+                    {'range': [0, 50], 'color': 'lightgray'},
+                    {'range': [50, 100], 'color': 'lightgray'}
+                ],
+                'threshold': None
+            },
+            domain={'x': [0, 1], 'y': [0, 1]},
+        ))
+        st.plotly_chart(fig, use_container_width=True)
 
 
 
 
 
 
-    def compute_probability(code: str, lang: str) -> float:
-        # TODO: rimpiazza con la tua logica
-        return 1
-
-    prob = compute_probability(st.session_state["code"], st.session_state["lang"])
-
-    st.metric("LLM Probability", f"{prob:.2%}")
-    st.progress(float(prob))
 
 
 
 
 
 
-    if st.button("Go back"):
-        st.session_state["submitted"] = False
-        st.session_state["code"] = ""
-        st.session_state["lang"] = "python"
-        st.rerun()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
