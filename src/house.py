@@ -29,6 +29,8 @@ coDET_rel = os.path.relpath(BASE / "interface/dataset/CoDETM4.py", start=BASE)
 AIG_rel = os.path.relpath(BASE / "interface/dataset/AIGCodeSet.py", start=BASE)
 Pan_rel = os.path.relpath(BASE / "interface/dataset/Pan.py", start=BASE)
 
+BiScope = os.path.relpath(BASE / "interface/methods_testing/Biscope_interface.py", start=BASE)
+
 # Definisci le pagine usando st.Page
 
 #why     = st.Page(why_rel, title="Why a LLM Code Detector", icon="❔")
@@ -37,11 +39,13 @@ codemirage_page = st.Page(codemirage_rel, title="CodeMirage", icon="📊")
 coDET_page = st.Page(coDET_rel, title="CoDET-M4", icon="📊")
 AIG_rel_page = st.Page(AIG_rel, title="AIGCodeSet", icon="📊")
 Pan_rel_page = st.Page(Pan_rel, title="Pan", icon="📊")
+BiScope_page = st.Page(BiScope, title="BiScope", icon="📊")
 
 # Costruisci il menu con sezioni
 pages = {
     "Home": [detector_page],
-    "Datasets": [codemirage_page, AIG_rel_page, Pan_rel_page, coDET_page] # <-- CodeMirage come sottopagina
+    "Datasets": [codemirage_page, AIG_rel_page, Pan_rel_page, coDET_page],
+    "methods": [BiScope_page]
 }
 pg = st.navigation(pages, position='top')
 

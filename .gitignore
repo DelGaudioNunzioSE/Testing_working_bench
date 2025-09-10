@@ -24,3 +24,5 @@ checkpoint*/
 *.out
 logs/
 logs
+temp/
+uploads/
