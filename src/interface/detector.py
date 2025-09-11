@@ -3,7 +3,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from code_editor import code_editor
-import plotly.graph_objects as go
+import plotly.graph_objects as go # pip install plotly
 import time
 
 

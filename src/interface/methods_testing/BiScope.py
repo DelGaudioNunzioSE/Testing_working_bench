@@ -52,36 +52,6 @@ def detect_single_sample(args, model, tokenizer, summary_model, summary_tokenize
     # summary_override  <------ ADDED BY ME
     if summary_override is not None:
         prompt_text = COMPLETION_PROMPT.format(prompt=summary_override)
-
-    elif 'gpt-' in args.summary_model:
-        from openai import OpenAI
-        openai_key = os.environ.get('OPENAI_API_KEY')
-        if not openai_key:
-            raise ValueError("OPENAI_API_KEY not found in environment.")
-        client = OpenAI(api_key=openai_key)
-        from tenacity import (
-            retry,
-            stop_after_attempt,
-            wait_random_exponential,
-        )
-        @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
-        def openai_backoff(client, **kwargs):
-            return client.chat.completions.create(**kwargs)
-        summary_input = f"generate a very short and concise summary for the following text, just the summary: {sample}"
-        response = openai_backoff(client, model=args.summary_model,
-                                  messages=[{"role": "user", "content": summary_input}])
-        summary_text = response.choices[0].message.content.strip()
-        # if '"""' in summary_text:
-        #     summary_text = summary_text.split('"""')[-1]
-        prompt_text = COMPLETION_PROMPT.format(prompt=summary_text)
-    elif args.summary_model in MODEL_ZOO:
-        summary_input = f"Write a title for this text: {sample}\nJust output the title:"
-        summary_ids = summary_tokenizer(summary_input, return_tensors='pt',
-                                        max_length=args.sample_clip, truncation=True).input_ids.to(device)
-        summary_ids = summary_ids[:, 1:]  # Remove start token.
-        gen_ids = generate(summary_model, summary_tokenizer, summary_ids, summary_ids.shape[1], 64)
-        summary_text = summary_tokenizer.decode(gen_ids, skip_special_tokens=True).strip().split('\n')[0]
-        prompt_text = COMPLETION_PROMPT.format(prompt=summary_text)
     else:
         prompt_text = COMPLETION_PROMPT_ONLY
     ##################################################################################
@@ -169,14 +139,13 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
     # (3.0) setup
     # (3.0) Obtaining len of the dataset
     df = pd.read_csv(dataset_path)
-    LEN_DS = len(df)
-    LEN_HUMAN = (df['label'] == 0).sum()
-    LEN_LLM = (df['label'] == 1).sum()
+    LEN_HUMAN = (df['label'] == 0).astype(np.int64).sum()
+    LEN_LLM = (df['label'] == 1).astype(np.int64).sum()
     del df
     gc.collect()
     # (3.0) using cleaned or not
     if clear_code:
-        code = "clear_code"
+        code = "cleared_code"
     else:
         code = "code"
     print(f"Using {code} column")
@@ -187,12 +156,12 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
 
     # (3.1) Humans
     ds_human = ds.filter(lambda ex: ex["label"]==0)
-    if next(iter(ds_human), None)(ds_human) is None:
+    if next(iter(ds_human), None) is None:
         raise Exception("Filter by label failed")
     
     # (3.1) LLM
     ds_LLM = ds.filter(lambda ex: ex["label"]==1)
-    if next(iter(ds_LLM), None)(ds_LLM) is None:
+    if next(iter(ds_LLM), None) is None:
         raise Exception("Filter by label failed")
 
 
@@ -221,40 +190,41 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
     # (5.1) human_features
     human_feat_path = os.path.join(out_dir, "human_features.pkl")
     if os.path.isfile(human_feat_path):
-        raise FileExistsError('human_features.pkl just exsist, please erase it')
+        warnings.warn('human_features.pkl just exsist, please erase it')
     
-
-    none_list = [None] * LEN_HUMAN
-    human_features = [
-        detect_single_sample(args_like, det_m, det_tok, None, None, text, summary_override=prompt, device=DEVICE)
-        for text, prompt in stqdm(
-            zip(ds_human[code], ds_human["prompt"] if use_prompt else none_list),  # iterable
-            total=LEN_HUMAN,                # tqdm
-            desc="Human code features generation"     # tqdm
-        )
-    ]
-    with open(human_feat_path, "wb") as f:
-        pickle.dump(human_features, f)
+    else:
+        none_list = [None] * LEN_HUMAN
+        human_features = [
+            detect_single_sample(args_like, det_m, det_tok, None, None, text, summary_override=prompt, device=DEVICE)
+            for text, prompt in stqdm(
+                zip(ds_human[code], ds_human["prompt"] if use_prompt else none_list),  # iterable
+                total=LEN_HUMAN,                # tqdm
+                desc="Human code features generation"     # tqdm
+            )if text is not None
+        ]
+        with open(human_feat_path, "wb") as f:
+            pickle.dump(human_features, f)
 
 
 
 
     gpt_feat_path = os.path.join(out_dir, "LLM_features.pkl")
     if os.path.isfile(gpt_feat_path):
-        raise FileExistsError('human_features.pkl just exsist, please erase it')
+        warnings.warn('human_features.pkl just exsist, please erase it')
     
-    none_list = [None] * LEN_LLM
-    gpt_features = [
-        detect_single_sample(args_like, det_m, det_tok, None, None, text, summary_override=prompt, device=DEVICE)
-        for text, prompt in stqdm( 
-            zip(ds_LLM[code], ds_LLM["prompt"] if use_prompt else none_list), 
-            total=LEN_LLM,
-            desc="LLM code features generation", 
-        )
-            
-    ]
-    with open(gpt_feat_path, "wb") as f:
-        pickle.dump(gpt_features, f)
+    else:
+        none_list = [None] * LEN_LLM
+        gpt_features = [
+            detect_single_sample(args_like, det_m, det_tok, None, None, text, summary_override=prompt, device=DEVICE)
+            for text, prompt in stqdm( 
+                zip(ds_LLM[code], ds_LLM["prompt"] if use_prompt else none_list), 
+                total=LEN_LLM,
+                desc="LLM code features generation", 
+            )if text is not None
+                
+        ]
+        with open(gpt_feat_path, "wb") as f:
+            pickle.dump(gpt_features, f)
 
 
     torch.set_grad_enabled(True)
@@ -315,6 +285,9 @@ def train(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 
     # CLASSIFICTION TRAINING
     print("TRAINING...")
     train_feats = np.concatenate([train_human, train_gpt], axis=0)
+    train_feats = np.asarray(train_feats, dtype=np.float64)
+    train_feats = np.nan_to_num(train_feats, nan=0.0, posinf=1e30, neginf=-1e30)
+    train_feats = np.clip(train_feats, -1e30, 1e30)
     train_labels = np.concatenate([np.zeros(len(train_human)), np.ones(len(train_gpt))], axis=0)
     clf = RandomForestClassifier(n_estimators=200, random_state=seed)
     clf.fit(train_feats, train_labels)
@@ -392,6 +365,9 @@ def test(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 )
 
     # X_test e y_test
     X_test = np.concatenate([test_human, test_gpt], axis=0)
+    X_test = np.asarray(X_test, dtype=np.float64)
+    X_test = np.nan_to_num(X_test, nan=0.0, posinf=1e30, neginf=-1e30)
+    X_test = np.clip(X_test, -1e30, 1e30)
     y_real = np.concatenate([np.zeros(len(test_human)), np.ones(len(test_gpt))], axis=0)
     print(f"len human:{len(test_human)} len gpt:{len(test_gpt)}")
 

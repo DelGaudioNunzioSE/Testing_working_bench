@@ -29,7 +29,8 @@ coDET_rel = os.path.relpath(BASE / "interface/dataset/CoDETM4.py", start=BASE)
 AIG_rel = os.path.relpath(BASE / "interface/dataset/AIGCodeSet.py", start=BASE)
 Pan_rel = os.path.relpath(BASE / "interface/dataset/Pan.py", start=BASE)
 
-BiScope = os.path.relpath(BASE / "interface/methods_testing/Biscope_interface.py", start=BASE)
+BiScope = os.path.relpath(BASE / "interface/methods_testing/BiScope_interface.py", start=BASE)
+
 
 # Definisci le pagine usando st.Page
 
