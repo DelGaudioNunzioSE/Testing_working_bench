@@ -68,7 +68,7 @@ with c2 :
     number = st.number_input(
         "Insert the dimension of the dataset that you prefer",  # etichetta
         min_value=1000,            # valore minimo (opzionale)
-        max_value=9000,          # max value
+        max_value=60000,          # max value
         step=1000                  # incremento predefinito
     )
 st.text('To perform quick but indicative tests of code quality, a split of only 1000 code samples\
