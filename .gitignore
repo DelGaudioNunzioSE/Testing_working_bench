@@ -23,3 +23,6 @@ checkpoint*/
 *.png
 *.out
 logs/
+logs
+temp/
+uploads/
