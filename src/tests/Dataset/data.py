@@ -100,10 +100,10 @@ class CodeMirage(dataset):
 
     def __init__(self, len_dataset = 1000, seed = 30):
         super().__init__(seed)
-        dataset : Dataset  = load_dataset("HanxiGuo/CodeMirage")
+        dataset_original : Dataset  = load_dataset("HanxiGuo/CodeMirage")
         #dataset = concatenate_datasets([dataset["train"], dataset["test"]])
-        dataset = dataset["train"]
-        dataset_test = dataset_test["test"]
+        dataset = dataset_original["train"]
+        dataset_test = dataset_original["test"]
 
         dataset = dataset.shuffle(seed=self.seed)
 
@@ -133,8 +133,28 @@ class CodeMirage(dataset):
                                            seed=self.seed)
         
 
+        if int(len_dataset*0.1) < 200:
+            desired_n = 200
+        else:
+            desired_n = int(len_dataset*0.1) 
+
+        dataset_test_not_human = dataset_test.filter(lambda x: x["LLM"] != "Human" )
+        dataset_test_not_human = balanced_sample_multi_cols(dataset_test_not_human, 
+                                               cols=("language","LLM"), 
+                                               desired_n=desired_n,
+                                               seed=self.seed)
+        
+
+        dataset_test_human = dataset_test.filter(lambda x: x["LLM"] == "Human" )
+        dataset_test_human = balanced_sample_multi_cols(dataset_test_human, 
+                                           cols=("language","LLM"), 
+                                           desired_n=desired_n,
+                                           seed=self.seed)
+        
+
 
         dataset =concatenate_datasets([human, not_human])
+        dataset_test =concatenate_datasets([dataset_test_human, dataset_test_not_human])
         
         all_codes = [import_remover(comment_remover(x, language), language)  for x, language in zip(dataset["code"], dataset["language"])]
         dataset = dataset.add_column("cleared_code", all_codes)
@@ -148,8 +168,8 @@ class CodeMirage(dataset):
 
         dataset = dataset.add_column('status_in_folder', [None] * len(dataset))
         dataset = dataset.add_column('prompt', [None]*len(dataset))
-        dataset_test = dataset_test.add_column('status_in_folder', [None] * len(dataset))
-        dataset_test = dataset_test.add_column('prompt', [None]*len(dataset))
+        dataset_test = dataset_test.add_column('status_in_folder', [None] * len(dataset_test))
+        dataset_test = dataset_test.add_column('prompt', [None]*len(dataset_test))
 
 
 
@@ -174,9 +194,9 @@ class CodeMirage(dataset):
         self.DF_test = self.DF_test.reindex(columns=['label', 'LLM', 'language', 'status_in_folder', 'prompt', 'code', 'cleared_code', 'index'])
         return
     
-    @override
+    #@override
     def convert_df_to_csv_split(self):
-        train, val  = train_test_split(self.DF, test_size=0.1, random_state=42, stratify=train["label"])
+        train, val  = train_test_split(self.DF, test_size=0.1, random_state=42, stratify=self.DF["label"])
         return train.to_csv(index=False).encode('utf-8'), val.to_csv(index=False).encode('utf-8'), self.DF_test.to_csv(index=False).encode('utf-8')
 
 
