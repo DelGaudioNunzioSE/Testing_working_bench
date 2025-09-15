@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.tabel import render_summary_table
-from tests.Dataset.data import AIG
+from interface.dataset.data import AIG
 
 import altair as alt
 
@@ -18,7 +18,6 @@ c1, c2 = st.columns(2)
 with c1:
     st.markdown("""**AIGCodeSet:** is the test to evaluate:
 - competitive code evaluation
-- correct code vs wrong code evaluation
 - difference between difficulty 
 """)
 with c2:
@@ -30,30 +29,6 @@ a plain prompt and from existing code.')
 
 
 ######
-
-
-
-
-
-with st.expander("Original dataset Table", expanded=False):
-    html = render_summary_table(
-        human_code="9,510",
-        llms_code="5,650",
-        num_llms_desc="3 <em>Gemini 1.5 Flash, Codestral-22B, CodeLlama-34B</em>",
-        diversity_desc="3 different source models",
-        use_period="Average LLMs release date: 2024 (now exist Gemini-2.0)",
-        languages_desc="Python",
-        code_types="unspecified",
-        code_size="1<sup>st</sup> percentile: 30 words, 3<sup>rd</sup> percentile: 50 words",
-        code_context="competitive",
-        prompts="provided",
-        source_human='CodeNet by IBM <a href="https://github.com/IBM/Project_CodeNet" target="_blank">[64]</a>',
-        code_quality="Executable check",
-        reliability="Hight",
-        note="Evaluation Summary: AIGCodeSet Dataset",
-        left_width="50%", right_width="50%"
-    )
-    st.html(html)
 
 
 
@@ -71,9 +46,7 @@ with c2 :
         step=100,                  # incremento predefinito
         value=1000
     )
-st.text('To perform quick but indicative tests of code quality, a split of only 1000 code samples\
-(500 human and 500 LLM) was taken, while maintaining language balance as much as possible.\n\
-you can take any split you want.')
+st.text('In this dataset, the "status in folder" column refers to the human code used in the prompt to generate LLM code. The LLM code has not been tested.')
 
 
 

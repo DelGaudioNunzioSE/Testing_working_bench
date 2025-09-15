@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.tabel import render_summary_table
-from tests.Dataset.data import Pan
+from interface.dataset.data import Pan
 
 import altair as alt
 
@@ -26,28 +26,6 @@ To achieve this, the authors construct a dedicated dataset.')
 ######
 
 
-
-
-
-with st.expander("Original dataset Table", expanded=False):
-    html = render_summary_table(
-        human_code="5,069",
-        llms_code="65,897",
-        num_llms_desc="1 <em>GPT</em>",
-        diversity_desc="1",
-        use_period="unspecified",
-        languages_desc="Python",
-        code_types="unspecified",
-        code_size="1<sup>st</sup> percentile: 54 words, 3<sup>rd</sup> percentile: 83 words",
-        code_context="competitive",
-        prompts="provided",
-        source_human="Quescol, Kaggle",
-        code_quality="filtered by human",
-        reliability="Peer-review paper",
-        note="Table 3.4: Evaluation Summary: Pan-et-al Dataset",
-        left_width="60%", right_width="40%"
-    )
-    st.html(html)
 
 
 

@@ -87,7 +87,7 @@ with c1:
                             allow_reset=True)
 
 
-    col1, col2 = st.columns([15,1], vertical_alignment="bottom")
+    col1, col2 = st.columns([8,1], vertical_alignment="bottom")
 
 
     with col1:

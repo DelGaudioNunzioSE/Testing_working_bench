@@ -23,7 +23,7 @@ import joblib
 
 
 
-from interface.methods_testing.biscope_utils import *
+from interface.methods_testing.BiScope.biscope_utils import *
 
 
 MODEL_ZOO = {
@@ -106,7 +106,7 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
 
     # quantizzation support
     if quantization:
-        quant = BitsAndBytesConfig(load_in_8bit=True)
+        quant = BitsAndBytesConfig(load_in_8bit=True,  llm_int8_enable_fp32_cpu_offload=True)
         kwargs = dict(
             quantization_config=quant,
             device_map="auto" if DEVICE.startswith("cuda") else None,
@@ -122,7 +122,7 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
     # MODEL
     det_m = AutoModelForCausalLM.from_pretrained(
         MODEL_ZOO[model],
-        **kwargs
+        **kwargs,
     ).eval()
     
     # TOKENIZER
@@ -193,11 +193,12 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
         warnings.warn('human_features.pkl just exsist, please erase it')
     
     else:
-        none_list = [None] * LEN_HUMAN
+        codes   = ds_human["code"]
+        prompts = ds_human["prompt"] if use_prompt else [None]*LEN_HUMAN
         human_features = [
             detect_single_sample(args_like, det_m, det_tok, None, None, text, summary_override=prompt, device=DEVICE)
             for text, prompt in stqdm(
-                zip(ds_human[code], ds_human["prompt"] if use_prompt else none_list),  # iterable
+                zip(codes, prompts),  # iterable
                 total=LEN_HUMAN,                # tqdm
                 desc="Human code features generation"     # tqdm
             )if text is not None
@@ -213,11 +214,12 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
         warnings.warn('human_features.pkl just exsist, please erase it')
     
     else:
-        none_list = [None] * LEN_LLM
+        codes   = ds_human["code"]
+        prompts = ds_human["prompt"] if use_prompt else [None]*LEN_LLM
         gpt_features = [
             detect_single_sample(args_like, det_m, det_tok, None, None, text, summary_override=prompt, device=DEVICE)
             for text, prompt in stqdm( 
-                zip(ds_LLM[code], ds_LLM["prompt"] if use_prompt else none_list), 
+                zip(codes, prompts), 
                 total=LEN_LLM,
                 desc="LLM code features generation", 
             )if text is not None
@@ -244,7 +246,7 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
 
 
 
-def train(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 ):
+def train(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 , quantization = None ):
     '''
     '''
 
@@ -270,7 +272,8 @@ def train(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 
                                                      dataset_path = dataset_path, 
                                                     clear_code = clear_code,
                                                     use_prompt = use_prompt,
-                                                    model = model
+                                                    model = model,
+                                                    quantization= quantization
                                                     )
 
     
@@ -318,7 +321,7 @@ def train(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 
 
 
 
-def test(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 ):
+def test(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42, quantization = None ):
     """
 
     """
@@ -345,7 +348,8 @@ def test(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 )
                                                      dataset_path=dataset_path,
                                                     clear_code = clear_code,
                                                     use_prompt = use_prompt,
-                                                    model = model
+                                                    model = model,
+                                                    quantization = quantization
                                                     )
     torch.set_grad_enabled(True)
 
