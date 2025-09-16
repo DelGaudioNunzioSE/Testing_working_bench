@@ -21,8 +21,6 @@ st.title('LLMPPL')
 st.set_page_config(layout="wide")
 
 
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
 
 
 

@@ -1,5 +1,4 @@
 import streamlit as st
-from utils.tabel import render_summary_table
 from interface.dataset.data import CodeMirage
 
 import altair as alt

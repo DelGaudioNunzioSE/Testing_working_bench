@@ -10,20 +10,34 @@ from itertools import chain
 from matplotlib.patches import Patch
 
 
-def compute_metrics(y_true:list, y_score:list):
-    if y_true is None or y_score is None or len(y_true)<1 or len(y_score)<0:
+def compute_metrics(y_true, y_score):
+    # guard clauses
+    if y_true is None or y_score is None:
         return None, None, None
-    else:
-        y_true = np.asarray(y_true, dtype=int)
-        y_score = np.asarray(y_score, dtype=float)
-        y_pred_05 = (np.asarray(y_score) >= 0.5).astype(int)
-        fi = f1_score(y_true, y_pred_05)
+    if len(y_true) == 0 or len(y_score) == 0 or len(y_true) != len(y_score):
+        return None, None, None
 
-        # TPR a FPR target
-        fpr, tpr, _ = roc_curve(y_true, y_score)
-        tpr_at_10 = float(np.interp(0.10, fpr, tpr))
-        tpr_at_01 = float(np.interp(0.01, fpr, tpr))
-        return fi, tpr_at_10, tpr_at_01
+    y_true  = np.asarray(y_true).astype(int)
+    y_score = np.asarray(y_score, dtype=float)
+    if np.isnan(y_score).any():
+        y_score = np.nan_to_num(y_score, nan=0.0)
+
+    # serve binario e entrambe le classi presenti
+    classes = np.unique(y_true)
+    if classes.size != 2:
+        return None, None, None
+
+    y_pred_05 = (y_score >= 0.5).astype(int)
+    f1 = f1_score(y_true, y_pred_05)
+
+    fpr, tpr, _ = roc_curve(y_true, y_score)
+    # interp richiede x crescente e senza duplicati
+    fpr_u, idx = np.unique(fpr, return_index=True)
+    tpr_u = tpr[idx]
+
+    tpr_at_10 = float(np.interp(0.10, fpr_u, tpr_u))
+    tpr_at_01 = float(np.interp(0.01, fpr_u, tpr_u))
+    return f1, tpr_at_10, tpr_at_01
 
 
 

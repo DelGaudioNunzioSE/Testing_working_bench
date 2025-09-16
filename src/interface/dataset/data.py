@@ -183,8 +183,8 @@ class CodeMirage(dataset):
 
             return {'label': y}
         
-        dataset = dataset.map(add_label)
-        dataset_test = dataset_test.map(add_label)
+        dataset = dataset.map(add_label, num_proc=4)
+        dataset_test = dataset_test.map(add_label, num_proc=4)
 
 
         self.DF : pd.DataFrame = dataset.to_pandas()
@@ -311,7 +311,7 @@ class Pan(dataset):
 
         ds_a = dataset.remove_columns(["solution_code"]).rename_column("Python Code",'code')
         print(ds_a)
-        ds_a = ds_a.map(lambda batch: {'test_result.passed': [-1] * len(batch['test_result.passed'])}, batched=True)
+        ds_a = ds_a.map(lambda batch: {'test_result.passed': [-1] * len(batch['test_result.passed'])}, batched=True, num_proc=4)
         ds_b = dataset.remove_columns(["Python Code"]).rename_column("solution_code",'code')
         ds_a = ds_a.add_column('LLM', ['Human']*len(ds_a))
         ds_b = ds_b.add_column('LLM', ['GPT']*len(ds_a))
@@ -340,7 +340,7 @@ class Pan(dataset):
 
             return {'status_in_folder': y}
         
-        dataset = dataset.map(status)
+        dataset = dataset.map(status, num_proc=4)
 
 
         dataset = balanced_sample_multi_cols(dataset, 
@@ -358,7 +358,7 @@ class Pan(dataset):
 
             return {'label': y}
         
-        dataset = dataset.map(add_label)
+        dataset = dataset.map(add_label, num_proc=4)
 
 
         self.DF : pd.DataFrame = dataset.to_pandas()
@@ -429,7 +429,7 @@ class CoDETM4(dataset):
 
             return {'label': y}
         
-        dataset = dataset.map(add_label)
+        dataset = dataset.map(add_label, num_proc=4)
 
 
         self.DF : pd.DataFrame = dataset.to_pandas()

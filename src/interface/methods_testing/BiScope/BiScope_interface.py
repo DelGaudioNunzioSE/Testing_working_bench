@@ -19,10 +19,6 @@ st.title('BiScope')
 debug = True  ###############################  <---------------------
 st.set_page_config(layout="wide")
 
-
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
-
 if "last_csv_path" not in st.session_state:
     st.session_state.last_csv_path = None
 if "clicked_train" not in st.session_state:

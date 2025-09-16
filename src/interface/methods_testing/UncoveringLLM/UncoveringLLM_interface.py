@@ -20,10 +20,6 @@ from pathlib import Path
 st.title('UncoveringLLM')
 
 
-
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
-
 if "last_csv_path" not in st.session_state:
     st.session_state.last_csv_path = None
 if "busy" not in st.session_state:

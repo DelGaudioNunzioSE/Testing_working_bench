@@ -8,7 +8,7 @@ from interface.methods_testing.CodeT5.CodeT5_learning import  CodeT5_learning
 from interface.methods_testing.CodeT5.CodeT5_test import  test_model
 from datasets import load_dataset
 from interface.methods_testing.compute_metrics import auto_compute
-
+from sklearn.model_selection import train_test_split
 
 from stqdm import stqdm 
 from pathlib import Path
@@ -19,9 +19,6 @@ st.title('CodeT5')
 debug = False  ###############################  <---------------------
 st.set_page_config(layout="wide")
 
-
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
 
 if "last_csv_path_train" not in st.session_state:
     st.session_state.last_csv_path_train = None
@@ -37,6 +34,8 @@ if "busy" not in st.session_state:
     st.session_state.busy = False
 
 
+code_column = st.selectbox("code_column", ["code", "cleared_code"])
+
 
 col1, col2 = st.columns([1,1])
 with col1:
@@ -46,34 +45,22 @@ with col1:
         os.makedirs(df_train,exist_ok=True)
 
         st.session_state.last_csv_path_train = os.path.join(df_train, "train_dataset.csv")
-
-        # leggi subito
-        df = pd.read_csv(uploaded)
-        df = df.dropna(subset=["code"])
-        df = df.dropna(subset=["cleared_code"])
-        st.dataframe(df.head())
-        df.to_csv(st.session_state.last_csv_path_train, index=False, encoding="utf-8")
-
-
-    uploaded2 = st.file_uploader("Upload dataset to train the model", type=["csv"])
-    if uploaded2:
-        df_train = "./temp/CodeT5/train/"
-        os.makedirs(df_train,exist_ok=True)
-
         st.session_state.last_csv_path_val = os.path.join(df_train, "val_dataset.csv")
 
         # leggi subito
-        df = pd.read_csv(uploaded2)
-        df = df.dropna(subset=["code"])
-        df = df.dropna(subset=["cleared_code"])
+        df = pd.read_csv(uploaded)
+        df = df.dropna(subset=[code_column])
         st.dataframe(df.head())
-        df.to_csv(st.session_state.last_csv_path_val, index=False, encoding="utf-8")
+        belance_conlum = df["LLM"]
+        train_df, val_df  = train_test_split(df, test_size=0.1, random_state=42, stratify=belance_conlum)
 
-    if uploaded and uploaded2:
+        train_df.to_csv(st.session_state.last_csv_path_train, index=False, encoding="utf-8")
+        val_df.to_csv(st.session_state.last_csv_path_val, index=False, encoding="utf-8")
+
         st.session_state.clicked_train = st.button("Train", disabled=st.session_state.busy)
 
 with col2:
-    if st.session_state.last_csv_path is None:
+    if st.session_state.last_csv_path_train  is None and st.session_state.last_csv_path_val  is None:
         uploaded = st.file_uploader("Upload model .bin", type=["bin"])
         if uploaded:
             model = "./temp/CodeT5/train/"
@@ -141,7 +128,7 @@ if st.session_state.model_path:
         df_test = os.path.join(df_test, "dataset_to_test.csv")
         # leggi subito
         df = pd.read_csv(uploaded3)
-        df = df.dropna(subset=["code"])
+        df = df.dropna(subset=[code_column])
         st.dataframe(df.head())
         df.to_csv(df_test, index=False, encoding="utf-8")
 

@@ -2,14 +2,16 @@ import os
 import pandas as pd
 from interface.methods_testing.CodeT5.sniffer.gptsniffer import CodeT5pClassifier
 from interface.methods_testing.CodeT5.sniffer.dataset import CodeDataset
+from interface.methods_testing.CodeT5.sniffer.code_cleaner import comment_remover, newline_remover, import_remover
 import warnings
 import torch
 from torch.utils.data import DataLoader, Dataset
 from transformers import T5EncoderModel, Trainer, TrainingArguments , EarlyStoppingCallback, TrainingArguments, Trainer, EarlyStoppingCallback
-from test.Dataset.Code_preprcessing.code_cleaner import comment_remover, newline_remover, import_remover
 from datasets import load_dataset
 
-
+import tqdm
+from stqdm import stqdm
+tqdm.tqdm = stqdm
 
 
 def CodeT5_learning(train_path:str = './src/tests/Dataset/CoDET_train.csv', val_path:str = './src/tests/Dataset/CoDET_val.csv'):
@@ -21,7 +23,7 @@ def CodeT5_learning(train_path:str = './src/tests/Dataset/CoDET_train.csv', val_
 
 
     def preprocess(example):
-        code = example["cleared_code"]
+        code = example["code"]
         language = example["language"]
         code = comment_remover(code, language)
         code = import_remover(code, language)
@@ -45,7 +47,7 @@ def CodeT5_learning(train_path:str = './src/tests/Dataset/CoDET_train.csv', val_
     val_dataset = CodeDataset(df_v)
 
 
-
+    print('Upload model in memory')
     model = CodeT5pClassifier().to(device)
 
     path_temp = "./temp/CodeT5"
