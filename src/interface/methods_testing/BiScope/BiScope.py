@@ -85,7 +85,7 @@ def detect_single_sample(args, model, tokenizer, summary_model, summary_tokenize
 
 
 
-def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, use_prompt : bool = True, quantization : bool = True, model: str = "CodeLlama"):
+def data_generation(out_dir: str, dataset_path: str, code : str = 'code', use_prompt : bool = True, quantization : bool = True, model: str = "CodeLlama"):
     """
 
     """
@@ -114,7 +114,7 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
         )
     else:
         kwargs = dict(
-            torch_dtype=torch.float16 if DEVICE.startswith("cuda") else None,
+            dtype=torch.float16 if DEVICE.startswith("cuda") else None,
             device_map="auto" if DEVICE.startswith("cuda") else None,
             low_cpu_mem_usage=True,   # utile anche senza quant
         )
@@ -144,15 +144,11 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
     del df
     gc.collect()
     # (3.0) using cleaned or not
-    if clear_code:
-        code = "cleared_code"
-    else:
-        code = "code"
     print(f"Using {code} column")
 
 
     # (3.1) load data in streaming
-    ds = load_dataset("csv", data_files=dataset_path, split="train", streaming=True)
+    ds = load_dataset("csv", data_files=dataset_path, split="train")
 
     # (3.1) Humans
     ds_human = ds.filter(lambda ex: ex["label"]==0)
@@ -189,17 +185,19 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
     torch.set_grad_enabled(False)
     # (5.1) human_features
     human_feat_path = os.path.join(out_dir, "human_features.pkl")
-    if os.path.isfile(human_feat_path):
-        warnings.warn('human_features.pkl just exsist, please erase it')
+    i = 0
+    while os.path.isfile(human_feat_path):
+        i += 1
+        human_feat_path = os.path.join(out_dir, "human_features_" + str(i) + ".pkl")
     
     else:
-        codes   = ds_human["code"]
+        codes   = ds_human[code]
         prompts = ds_human["prompt"] if use_prompt else [None]*LEN_HUMAN
         human_features = [
             detect_single_sample(args_like, det_m, det_tok, None, None, text, summary_override=prompt, device=DEVICE)
             for text, prompt in stqdm(
                 zip(codes, prompts),  # iterable
-                total=LEN_HUMAN,                # tqdm
+                total=min(len(codes), len(prompts)),                # tqdm
                 desc="Human code features generation"     # tqdm
             )if text is not None
         ]
@@ -210,17 +208,19 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
 
 
     gpt_feat_path = os.path.join(out_dir, "LLM_features.pkl")
-    if os.path.isfile(gpt_feat_path):
-        warnings.warn('human_features.pkl just exsist, please erase it')
+    i = 0
+    while os.path.isfile(gpt_feat_path):
+        i += 1
+        gpt_feat_path = os.path.join(out_dir, "LLM_features_" + str(i)+ ".pkl")
     
     else:
-        codes   = ds_human["code"]
-        prompts = ds_human["prompt"] if use_prompt else [None]*LEN_LLM
+        codes   = ds_LLM[code]
+        prompts = ds_LLM["prompt"] if use_prompt else [None]*LEN_LLM
         gpt_features = [
             detect_single_sample(args_like, det_m, det_tok, None, None, text, summary_override=prompt, device=DEVICE)
             for text, prompt in stqdm( 
                 zip(codes, prompts), 
-                total=LEN_LLM,
+                total=min(len(codes), len(prompts)),
                 desc="LLM code features generation", 
             )if text is not None
                 
@@ -246,7 +246,7 @@ def data_generation(out_dir: str, dataset_path: str, clear_code : bool = True, u
 
 
 
-def train(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 , quantization = None ):
+def train(model, dataset_path, code: str, use_prompt: bool, seed: int=42 , quantization = None ):
     '''
     '''
 
@@ -270,7 +270,7 @@ def train(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 
 
     human_feat_path, gpt_feat_path = data_generation(out_dir=out_dir,
                                                      dataset_path = dataset_path, 
-                                                    clear_code = clear_code,
+                                                    code = code,
                                                     use_prompt = use_prompt,
                                                     model = model,
                                                     quantization= quantization
@@ -299,15 +299,18 @@ def train(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 
 
     # SAVE MODEL
     metadata = {
-        "data_generation": data_generation,
-        "clear_code" : clear_code,
-        "use_prompt" : use_prompt,
+        "code" : code,
+        "use_prompt_bool" : use_prompt,
         "feature_schema": "10x(FCE+BCE)*4stats",  # ?
     }
 
     bundle = {"clf": clf, "metadata": metadata}
 
     model_path = os.path.join(out_dir, f"biscope_rf.joblib")
+    i = 0
+    while os.path.isfile(model_path):
+        i += 1
+        model_path = os.path.join(out_dir, "biscope_rf" + str(i)+ ".joblib")
     joblib.dump(bundle, model_path)
     print("Saved:", model_path)
 
@@ -321,7 +324,7 @@ def train(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42 
 
 
 
-def test(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42, quantization = None ):
+def test(model, dataset_path, code: str, use_prompt: bool, model_path:str, seed: int=42, quantization = None , debug = False):
     """
 
     """
@@ -341,16 +344,20 @@ def test(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42, 
     
     
     # Generate features for the training dataset.
-    print("Generating train features...")
+    print("Generating test features...")
 
     torch.set_grad_enabled(False)
-    human_feat_path, gpt_feat_path = data_generation(out_dir=out_dir, 
-                                                     dataset_path=dataset_path,
-                                                    clear_code = clear_code,
-                                                    use_prompt = use_prompt,
-                                                    model = model,
-                                                    quantization = quantization
-                                                    )
+    if debug:
+        human_feat_path = './temp/BiScope/test/human_features_debug.pkl'
+        gpt_feat_path ='./temp/BiScope/test/LLM_features_debug.pkl'
+    else:
+        human_feat_path, gpt_feat_path = data_generation(out_dir=out_dir, 
+                                                        dataset_path=dataset_path,
+                                                        code = code,
+                                                        use_prompt = use_prompt,
+                                                        model = model,
+                                                        quantization = quantization
+                                                        )
     torch.set_grad_enabled(True)
 
 
@@ -363,7 +370,7 @@ def test(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42, 
 
 
     # load model
-    bundle = joblib.load("./temp/BiScope/train/biscope_rf.joblib")
+    bundle = joblib.load(model_path)
     clf : RandomForestClassifier = bundle["clf"]
     print(bundle["metadata"])
 
@@ -379,4 +386,4 @@ def test(model, dataset_path, clear_code: bool, use_prompt: bool, seed: int=42, 
     preds = clf.predict(X_test)
     print(len(preds))
 
-    return preds, y_real
+    return y_real, preds

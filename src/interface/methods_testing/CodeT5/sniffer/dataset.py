@@ -17,7 +17,7 @@ from sklearn.metrics import accuracy_score
 
 
 class CodeDataset(Dataset):
-    def __init__(self, df, text_col="cleared_code", label_col="label", tokenizer =  AutoTokenizer.from_pretrained("/home/N.DELGAUDIO5/hugging/codet5p-220m-local", use_fast=True) ):
+    def __init__(self, df, text_col="code", label_col="label", tokenizer =  AutoTokenizer.from_pretrained("Salesforce/codet5p-220m", use_fast=True) ):
         self.tokenizer = tokenizer
         # opzionale: filtra righe valide
         df = df.dropna(subset=[text_col, label_col])

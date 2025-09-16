@@ -44,7 +44,7 @@ with c2 :
     number = st.number_input(
         "Insert the dimension of the dataset that you prefer",  # etichetta
         min_value=1000,            # valore minimo (opzionale)
-        max_value=60000,          # max value
+        max_value=100000,          # max value
         step=1000                  # incremento predefinito
     )
 st.text('This dataset, while large, only includes GitHub code that was originally heavily commented.')

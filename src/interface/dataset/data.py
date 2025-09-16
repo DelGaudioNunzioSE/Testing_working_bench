@@ -135,8 +135,10 @@ class CodeMirage(dataset):
 
         if int(len_dataset*0.1) < 200:
             desired_n = 200
+        elif int(len_dataset) > 60000:
+            desired_n = 60000
         else:
-            desired_n = int(len_dataset*0.1) 
+            desired_n = len_dataset
 
         dataset_test_not_human = dataset_test.filter(lambda x: x["LLM"] != "Human" )
         dataset_test_not_human = balanced_sample_multi_cols(dataset_test_not_human, 

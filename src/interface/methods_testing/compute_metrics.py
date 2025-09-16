@@ -76,7 +76,7 @@ def graph(y=[0.88, 0.82, 0.55], err=[0.03, 0.04, 0.06], method='we' ):
     leg.set_in_layout(False)
 
     plt.tight_layout(rect=(0, 0, 1, 0.92))
-    st.pyplot(fig, use_container_width=True)
+    st.pyplot(fig, width='stretch')
     plt.close(fig)
     return 
 

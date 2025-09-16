@@ -31,6 +31,8 @@ Pan_rel = os.path.relpath(BASE / "interface/dataset/Pan.py", start=BASE)
 
 BiScope = os.path.relpath(BASE / "interface/methods_testing/BiScope/BiScope_interface.py", start=BASE)
 UncoveringLLM = os.path.relpath(BASE / "interface/methods_testing/UncoveringLLM/UncoveringLLM_interface.py", start=BASE)
+CodeT5 = os.path.relpath(BASE / "interface/methods_testing/CodeT5/CodeT5_interface.py", start=BASE)
+llmppl = os.path.relpath(BASE / "interface/methods_testing/llmppl/llmppl_interface.py", start=BASE)
 
 # Definisci le pagine usando st.Page
 
@@ -42,12 +44,14 @@ AIG_rel_page = st.Page(AIG_rel, title="AIGCodeSet", icon="📊")
 Pan_rel_page = st.Page(Pan_rel, title="Pan", icon="📊")
 BiScope_page = st.Page(BiScope, title="BiScope", icon="👀")
 UncoveringLLM_page = st.Page(UncoveringLLM, title="UncoveringLLM", icon="👀")
+CodeT5_page = st.Page(CodeT5, title="CodeT5", icon="👀")
+llmppl_page = st.Page(llmppl, title="llmppl", icon="👀")
 
 # Costruisci il menu con sezioni
 pages = {
     "Home": [detector_page],
     "Datasets": [codemirage_page, AIG_rel_page, Pan_rel_page, coDET_page],
-    "methods": [BiScope_page, UncoveringLLM_page]
+    "methods": [BiScope_page, UncoveringLLM_page, CodeT5_page, llmppl_page]
 }
 pg = st.navigation(pages, position='top')
 

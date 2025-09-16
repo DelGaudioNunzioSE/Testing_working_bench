@@ -40,7 +40,7 @@ from sklearn.metrics import accuracy_score
 
 
 class CodeT5pClassifier(nn.Module):
-    def __init__(self, model_name="/home/N.DELGAUDIO5/hugging/codet5p-220m-local", num_labels=2, dropout=0.3, quantize=False):
+    def __init__(self, model_name="Salesforce/codet5p-220m", num_labels=2, dropout=0.3, quantize=False):
         super().__init__()
 
         if quantize: # quantize
