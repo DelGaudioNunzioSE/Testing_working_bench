@@ -1,0 +1,395 @@
+# from utils
+import time
+import warnings
+import pandas as pd
+import torch
+import os
+import random
+
+import random
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import f1_score, accuracy_score
+from sklearn.model_selection import cross_val_score
+import torch
+import gc
+import os, json, pickle
+from types import SimpleNamespace
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from datasets import load_dataset
+import joblib
+
+from transformers import logging
+import tqdm
+from stqdm import stqdm
+tqdm.tqdm = stqdm
+
+
+from interface.methods_testing.methods.BiScope.biscope_utils import *
+
+
+MODEL_ZOO = {
+    'llama2-7b': 'meta-llama/Llama-2-7b-chat-hf',
+    'llama2-13b': 'meta-llama/Llama-2-13b-chat-hf',
+    'llama3-8b': 'meta-llama/Meta-Llama-3-8B-Instruct',
+    'gemma-2b': 'google/gemma-1.1-2b-it',
+    'gemma-7b': 'google/gemma-1.1-7b-it', 
+    'mistral-7b': 'mistralai/Mistral-7B-Instruct-v0.2'
+}
+
+
+
+# CHANGED BY ME
+COMPLETION_PROMPT_ONLY = "Complete the following text: "
+COMPLETION_PROMPT = "Given the summary:\n{prompt}\n Complete the following text: "
+
+
+def detect_single_sample(args, model, tokenizer, summary_model, summary_tokenizer, sample, summary_override , device='cuda'):
+    """
+    Process a sample by generating a summary-based prompt, tokenizing (with clipping),
+    obtaining model outputs, and computing loss-based features (FCE and BCE).
+    Returns a list of loss features computed over 10 segments.
+    """
+    # summary_override  <------ ADDED BY ME
+    if summary_override is not None:
+        prompt_text = COMPLETION_PROMPT.format(prompt=summary_override)
+    else:
+        prompt_text = COMPLETION_PROMPT_ONLY
+    ##################################################################################
+
+    # Tokenize the prompt and sample with token-level clipping.
+    prompt_ids = tokenizer(prompt_text, return_tensors='pt').input_ids.to(device)
+    text_ids = tokenizer(sample, return_tensors='pt', max_length=args.sample_clip, truncation=True).input_ids.to(device)
+    combined_ids = torch.cat([prompt_ids, text_ids], dim=1)
+    text_slice = slice(prompt_ids.shape[1], combined_ids.shape[1])
+    outputs = model(input_ids=combined_ids)
+    logits = outputs.logits
+    targets = combined_ids[0][text_slice]
+    
+    # Compute loss features from FCE and BCE losses.
+    fce_loss = compute_fce_loss(logits, targets, text_slice)
+    bce_loss = compute_bce_loss(logits, targets, text_slice)
+    features = []
+    for p in range(1, 10):
+        split = len(fce_loss) * p // 10
+        features.extend([
+            np.mean(fce_loss[split:]), np.max(fce_loss[split:]), 
+            np.min(fce_loss[split:]), np.std(fce_loss[split:]),
+            np.mean(bce_loss[split:]), np.max(bce_loss[split:]), 
+            np.min(bce_loss[split:]), np.std(bce_loss[split:])
+        ])
+    return features
+
+
+
+
+
+
+
+def data_generation(out_dir: str, dataset_path: str, code : str = 'code', use_prompt : bool = True, quantization : bool = True, model: str = "llama2-7b"):
+    """
+
+    """
+    print("Generating features 2...")
+
+    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+    
+    os.makedirs(out_dir, exist_ok=True)
+
+
+
+
+    # (2) DETECTION MODEL (logits): Load detection model (required)
+    ## use only trasformer inside the paper
+    if model not in MODEL_ZOO:
+        raise ValueError(f"Unknown detection model key: {model}. Must be one of: {list(MODEL_ZOO)}")
+    ## 
+
+    # quantizzation support
+    if quantization:
+        quant = BitsAndBytesConfig(load_in_8bit=True,  llm_int8_enable_fp32_cpu_offload=True)
+        kwargs = dict(
+            quantization_config=quant,
+            device_map="cuda" if DEVICE.startswith("cuda") else None,
+            low_cpu_mem_usage=True,
+        )
+    else:
+        kwargs = dict(
+            device_map="cuda"if DEVICE.startswith("cuda") else None,
+            low_cpu_mem_usage=True,   # useful even without quantization
+        )
+
+    # MODEL
+    logging.set_verbosity_info()
+    print("Generating features 3...")
+    det_m = AutoModelForCausalLM.from_pretrained(
+        MODEL_ZOO[model],
+        **kwargs,
+    ).eval()
+    print("Generating features 4...")
+    
+    # TOKENIZER
+    # padding_side = left so the model will never predict padding token
+    det_tok = AutoTokenizer.from_pretrained(MODEL_ZOO[model], padding_side="left")
+    # if the model don't have a default pad token e use [end-fo-sequence]
+    # this not introduce problem in eval time
+    det_tok.pad_token = det_tok.eos_token
+
+
+
+    # (3) Load local data
+
+    # (3.0) setup
+    # (3.0) Obtaining len of the dataset
+    df = pd.read_csv(dataset_path, on_bad_lines="skip")
+    LEN_HUMAN = (df['label'] == 0).astype(np.int64).sum()
+    LEN_LLM = (df['label'] == 1).astype(np.int64).sum()
+    del df
+    gc.collect()
+    # (3.0) using cleaned or not
+    print(f"Using {code} column")
+
+
+    # (3.1) load data in streaming
+    ds = load_dataset("csv", data_files=dataset_path, split="train", on_bad_lines="skip")
+
+
+    
+
+    # (3.1) Humans
+    ds_human = ds.filter(lambda ex: ex["label"]==0)
+    if next(iter(ds_human), None) is None:
+        raise Exception("Filter by label failed")
+    
+    # (3.1) LLM
+    ds_LLM = ds.filter(lambda ex: ex["label"]==1)
+    if next(iter(ds_LLM), None) is None:
+        raise Exception("Filter by label failed")
+
+
+
+
+    #____________________________
+
+
+
+
+    # (4) arg needed by the method (all default pharameter)
+    args_like = SimpleNamespace(
+        summary_model=None,
+        sample_clip=2048,   
+        split_ratio=0.1,
+        n_segments=10,
+    )
+    #############
+
+    print("Generating features 5...")
+    
+
+    
+    # (5) Extract & save features
+    torch.set_grad_enabled(False)
+    # (5.1) human_features
+    human_feat_path = os.path.join(out_dir, "human_features.pkl")
+    i = 0
+    while os.path.isfile(human_feat_path):
+        i += 1
+        human_feat_path = os.path.join(out_dir, "human_features_" + str(i) + ".pkl")
+    
+    else:
+        codes   = ds_human[code]
+        prompts = ds_human["prompt"] if use_prompt else [None]*LEN_HUMAN
+        human_features = [
+            detect_single_sample(args_like, det_m, det_tok, None, None, text, summary_override=prompt, device=DEVICE)
+            for text, prompt in stqdm(
+                zip(codes, prompts),  # iterable
+                total=min(len(codes), len(prompts)),                # tqdm
+                desc="Human code features generation"     # tqdm
+            )if text is not None
+        ]
+        with open(human_feat_path, "wb") as f:
+            pickle.dump(human_features, f)
+
+
+
+
+    gpt_feat_path = os.path.join(out_dir, "LLM_features.pkl")
+    i = 0
+    while os.path.isfile(gpt_feat_path):
+        i += 1
+        gpt_feat_path = os.path.join(out_dir, "LLM_features_" + str(i)+ ".pkl")
+    
+    else:
+        codes   = ds_LLM[code]
+        prompts = ds_LLM["prompt"] if use_prompt else [None]*LEN_LLM
+        gpt_features = [
+            detect_single_sample(args_like, det_m, det_tok, None, None, text, summary_override=prompt, device=DEVICE)
+            for text, prompt in stqdm( 
+                zip(codes, prompts), 
+                total=min(len(codes), len(prompts)),
+                desc="LLM code features generation", 
+            )if text is not None
+                
+        ]
+        with open(gpt_feat_path, "wb") as f:
+            pickle.dump(gpt_features, f)
+
+
+    torch.set_grad_enabled(True)
+    # DEALLOCATION
+    del det_m
+    del det_tok
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+
+    return human_feat_path, gpt_feat_path
+
+
+
+
+
+
+
+def train(model, dataset_path, code: str, use_prompt: bool, seed: int=42 , quantization = None ,out_dir = "./temp/BiScope/train"):
+    '''
+    '''
+
+    # Set seeds.
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    ####
+    
+
+    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+    os.makedirs(out_dir, exist_ok=True)
+    
+    
+    # Generate features for the training dataset.
+    print("Generating train features...")
+
+    human_feat_path, gpt_feat_path = data_generation(out_dir=out_dir,
+                                                     dataset_path = dataset_path, 
+                                                    code = code,
+                                                    use_prompt = use_prompt,
+                                                    model = model,
+                                                    quantization= quantization
+                                                    )
+
+    
+    # Load train features.
+    with open(human_feat_path, 'rb') as f:
+        train_human = np.array(pickle.load(f))
+    with open(gpt_feat_path, 'rb') as f:
+        train_gpt = np.array(pickle.load(f))
+    
+
+    
+    # CLASSIFICTION TRAINING
+    print("TRAINING...")
+    train_feats = np.concatenate([train_human, train_gpt], axis=0)
+    train_feats = np.asarray(train_feats, dtype=np.float64)
+    train_feats = np.nan_to_num(train_feats, nan=0.0, posinf=1e30, neginf=-1e30)
+    train_feats = np.clip(train_feats, -1e30, 1e30)
+    train_labels = np.concatenate([np.zeros(len(train_human)), np.ones(len(train_gpt))], axis=0)
+    clf = RandomForestClassifier(n_estimators=200, random_state=seed)
+    clf.fit(train_feats, train_labels)
+
+
+
+    # SAVE MODEL
+    metadata = {
+        "code" : code,
+        "use_prompt_bool" : use_prompt,
+        "feature_schema": "10x(FCE+BCE)*4stats",  # ?
+    }
+
+    bundle = {"clf": clf, "metadata": metadata}
+
+    model_path = os.path.join(out_dir, f"biscope_rf.joblib")
+    i = 0
+    while os.path.isfile(model_path):
+        i += 1
+        model_path = os.path.join(out_dir, "biscope_rf" + str(i)+ ".joblib")
+    joblib.dump(bundle, model_path)
+    print("Saved:", model_path)
+
+
+    return model_path
+
+
+
+
+
+
+
+
+def test(model, dataset_path, code: str, use_prompt: bool, model_path:str, seed: int=42, quantization = None , debug = False, out_dir = "./temp/BiScope/test"):
+    """
+
+    """
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    # Set seeds.
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    ####
+    
+    
+    os.makedirs(out_dir, exist_ok=True)
+    
+    
+    # Generate features for the training dataset.
+    print("Generating test features...")
+
+    torch.set_grad_enabled(False)
+    if debug:
+        human_feat_path = f'{out_dir}/human_features_debug.pkl'
+        gpt_feat_path =f'.{out_dir}/LLM_features_debug.pkl'
+    else:
+        human_feat_path, gpt_feat_path = data_generation(out_dir=out_dir, 
+                                                        dataset_path=dataset_path,
+                                                        code = code,
+                                                        use_prompt = use_prompt,
+                                                        model = model,
+                                                        quantization = quantization
+                                                        )
+    torch.set_grad_enabled(True)
+
+
+
+    # Load test features
+    with open(human_feat_path, 'rb') as f:
+        test_human = np.array(pickle.load(f))
+    with open(gpt_feat_path, 'rb') as f:
+        test_gpt = np.array(pickle.load(f))
+
+
+    # load model
+    bundle = joblib.load(model_path)
+    clf : RandomForestClassifier = bundle["clf"]
+    print(bundle["metadata"])
+
+    # X_test e y_test
+    X_test = np.concatenate([test_human, test_gpt], axis=0)
+    X_test = np.asarray(X_test, dtype=np.float64)
+    X_test = np.nan_to_num(X_test, nan=0.0, posinf=1e30, neginf=-1e30)
+    X_test = np.clip(X_test, -1e30, 1e30)
+    y_real = np.concatenate([np.zeros(len(test_human)), np.ones(len(test_gpt))], axis=0)
+    print(f"len human:{len(test_human)} len gpt:{len(test_gpt)}")
+
+    # Prediction
+    preds = clf.predict(X_test)
+    print(len(preds))
+
+    return y_real, preds
