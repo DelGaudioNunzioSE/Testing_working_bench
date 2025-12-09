@@ -26,3 +26,6 @@ logs/
 logs
 temp/
 uploads/
+!pan_final.csv
+!pan.csv
+!train_in_domain.csv
