@@ -15,7 +15,7 @@ import tqdm
 from stqdm import stqdm  
 tqdm.tqdm = stqdm
 from pathlib import Path
-from interface.methods_testing.methods.llmppl.mamba import MambaPPL, compute_ppl
+from interface.methods_testing.methods.llmppl.llmpplMambaVersion.mamba import MambaPPL, compute_ppl
 
 # 8.7
 
@@ -102,8 +102,10 @@ if uploaded2 is not None:
 
         dataset_with_ppl = dataset.map(compute_ppl, fn_kwargs={"mamba":mamba, "k":Setted_threshould2, "code_column":code_column})
 
-
-        auto_compute(ds= dataset_with_ppl, method = 'LLMPPL', opposite=True)
+        # Note: opposite=False because compute_ppl already handles perplexity logic correctly:
+        # high perplexity (>=threshold) → score=1 (human)
+        # low perplexity (<threshold) → score=0 (LLM)
+        auto_compute(ds= dataset_with_ppl, method = 'LLMPPL', opposite=False)
 
 
         st.success("completed")

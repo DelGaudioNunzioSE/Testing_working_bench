@@ -5,7 +5,6 @@ from sklearn.metrics import precision_recall_curve, roc_curve, f1_score
 from sklearn.model_selection import StratifiedKFold, KFold
 import streamlit as st
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from datasets import Dataset
 from itertools import chain
@@ -17,10 +16,12 @@ def compute_metrics(y_true, y_score, base_thr=0.5, opposite=False):
     if y_true is None or y_score is None or len(y_true) != len(y_score) or len(y_true)==0:
         return None, None, None, None, None, None
     
-    if opposite:
-        y_score = 1 - y_score
+    # Convert to arrays first, then apply opposite if needed
     y_true = np.asarray(y_true).astype(int)
     y_score = np.asarray(y_score, dtype=float)
+    
+    if opposite:
+        y_score = 1 - y_score
     
     if np.isnan(y_score).any():
         y_score = np.nan_to_num(y_score, nan=0.0)
@@ -64,7 +65,7 @@ def compute_metrics(y_true, y_score, base_thr=0.5, opposite=False):
     thr_clean = np.array(unique_thr)
     
     def tpr_at(alpha):
-        """TPR interpolato al valore FPR = alpha"""
+        """Interpolated TPR at FPR = alpha"""
         alpha = float(alpha)
         if alpha <= fpr_clean[0]:
             return float(tpr_clean[0])
@@ -73,10 +74,10 @@ def compute_metrics(y_true, y_score, base_thr=0.5, opposite=False):
         return float(np.interp(alpha, fpr_clean, tpr_clean))
     
     def thr_at(alpha):
-        """Soglia e TPR effettivi (step function) al valore FPR = alpha"""
+        """Actual threshold and TPR (step function) at FPR = alpha"""
         alpha = float(alpha)
         
-        # 
+        # Filter out infinite thresholds
         finite_mask = np.isfinite(thr_clean)
         if not np.any(finite_mask):
             return np.nan, 0.0
@@ -86,10 +87,10 @@ def compute_metrics(y_true, y_score, base_thr=0.5, opposite=False):
         thr_finite = thr_clean[finite_mask]
         
         if alpha < fpr_finite[0]:
-            # 
+            # FPR too low, no valid threshold available
             return np.nan, float(tpr_at(alpha))  
         
-        #  FPR <= alpha
+        # Find largest FPR <= alpha
         idx = np.searchsorted(fpr_finite, alpha, side="right") - 1
         return float(thr_finite[idx]), float(tpr_finite[idx])
     
@@ -105,26 +106,38 @@ def compute_metrics(y_true, y_score, base_thr=0.5, opposite=False):
 
 
 def thr_for_fpr(y_true, ppl, target_fpr=0.10, positive_is_higher=True):
+    """Find threshold that achieves target FPR for perplexity-based detection.
+    
+    Args:
+        y_true: True labels (1=human, 0=LLM)
+        ppl: Perplexity scores
+        target_fpr: Target false positive rate (default 0.10)
+        positive_is_higher: If True, higher scores indicate human (default for perplexity)
+    
+    Returns:
+        Optimal threshold value
+    """
     y_true = np.asarray(y_true).astype(int)
     ppl = np.asarray(ppl, dtype=float)
     score = ppl if positive_is_higher else -ppl
     fpr, tpr, thr = roc_curve(y_true, score, pos_label=1)
+    
+    # Filter finite thresholds
     m = np.isfinite(thr)
     fpr, tpr, thr = fpr[m], tpr[m], thr[m]
 
     if len(thr) == 0:
-        return None, 0.0, 0.0
+        return None
 
+    # Find thresholds with FPR <= target
     m2 = fpr <= target_fpr
 
     if not np.any(m2):
-        return None, float(np.interp(target_fpr, fpr, tpr)), float(target_fpr)
+        return None
 
+    # Select threshold with maximum TPR among valid FPR values
     idxs = np.where(m2)[0]
-
     best = idxs[np.argmax(tpr[m2])]
-
-
     thr_ppl = thr[best] if positive_is_higher else -thr[best]
 
     return float(thr_ppl)
@@ -133,10 +146,9 @@ def thr_for_fpr(y_true, ppl, target_fpr=0.10, positive_is_higher=True):
 def graph(y=[0.88, 0.82, 0.55], err=[0.03, 0.04, 0.06], method='we' ):
     mpl.rcParams.update(mpl.rcParamsDefault)
     plt.style.use("default")
-    # graph
+    # Convert to numpy arrays
     y   = np.asarray(y, dtype=float)
     err = np.asarray(err, dtype=float)
-    method = method
 
     x = np.arange(len(y))                  # [0,1,2]
     colors  = ["#bf8488", "#a3b1cd", "#4f709f"]
@@ -212,13 +224,11 @@ def split_by_kfold(ds: Dataset, k: int = 5, shuffle: bool = True, seed: int = 42
     llm = np.array(ds["LLM"])      
     language = np.array(ds["language"])  
 
-    # Verifica che le lunghezze siano compatibili
+    # Verify that all arrays have the same length
     if labels.shape[0] != scores.shape[0] or labels.shape[0] != llm.shape[0] or labels.shape[0] != language.shape[0]:
-        raise ValueError("different len between labels, scores, LLM e language.")
+        raise ValueError("Different lengths between labels, scores, LLM and language.")
     
-    n = len(labels)
-
-    # 
+    # Split human vs LLM samples
     human_mask = (llm == "human") | (llm == "Human")
     llm_non_human = llm[~human_mask]
     language_non_human = language[~human_mask]
@@ -230,36 +240,57 @@ def split_by_kfold(ds: Dataset, k: int = 5, shuffle: bool = True, seed: int = 42
     labels_human = labels[human_mask]
     scores_human = scores[human_mask]
 
-    # 1. 
-    human_splitter = StratifiedKFold(n_splits=k, shuffle=shuffle, random_state=seed)
+    # 1. Stratified K-Fold for human samples by language
     human_labels_by = defaultdict(list)
     human_scores_by = defaultdict(list)
 
     if len(language_human) == 0:
         raise ValueError("language_human empty")
     
-    # 
-    for i, (train_idx, test_idx) in enumerate(human_splitter.split(np.zeros(len(language_human)), language_human), start=1):
+    # Check if we have enough samples per class for stratification
+    unique_lang_human, counts_human = np.unique(language_human, return_counts=True)
+    min_samples_human = counts_human.min() if len(counts_human) > 0 else 0
+    
+    if min_samples_human < k:
+        # Fallback to regular KFold if insufficient samples
+        human_splitter = KFold(n_splits=min(k, len(language_human)), shuffle=shuffle, random_state=seed)
+        split_iter_human = human_splitter.split(np.arange(len(language_human)))
+    else:
+        human_splitter = StratifiedKFold(n_splits=k, shuffle=shuffle, random_state=seed)
+        split_iter_human = human_splitter.split(np.zeros(len(language_human)), language_human)
+    
+    # Split human samples
+    for i, (train_idx, test_idx) in enumerate(split_iter_human, start=1):
         human_labels_by[f"fold{i}"].extend(labels_human[test_idx].tolist())
         human_scores_by[f"fold{i}"].extend(scores_human[test_idx].tolist())
 
-    # 2. Stratificazione
-    combined = np.array([f"{l}-{lang}" for l, lang in zip(llm_non_human, language_non_human)]) # combino linguaggio e llm come fossero un solo gruppo
-    splitter = StratifiedKFold(n_splits=k, shuffle=shuffle, random_state=seed)
+    # 2. Stratified K-Fold for LLM samples by combined LLM-language groups
+    combined = np.array([f"{l}-{lang}" for l, lang in zip(llm_non_human, language_non_human)])
     
     unique_classes, counts = np.unique(combined, return_counts=True)
-    print(dict(zip(unique_classes, counts)))
-
+    print("Combined LLM-Language groups:", dict(zip(unique_classes, counts)))
+    min_samples_combined = counts.min() if len(counts) > 0 else 0
+    
     labels_by = defaultdict(list)
     scores_by = defaultdict(list)
     
-    # 
-    for i, (train_idx, test_idx) in enumerate(splitter.split(np.zeros(len(combined)), combined), start=1):
+    # Check if we have enough samples per class for stratification
+    if min_samples_combined < k:
+        # Fallback to regular KFold if insufficient samples
+        splitter = KFold(n_splits=min(k, len(combined)), shuffle=shuffle, random_state=seed)
+        split_iter = splitter.split(np.arange(len(combined)))
+    else:
+        splitter = StratifiedKFold(n_splits=k, shuffle=shuffle, random_state=seed)
+        split_iter = splitter.split(np.zeros(len(combined)), combined)
+    
+    # Split LLM samples
+    for i, (train_idx, test_idx) in enumerate(split_iter, start=1):
         labels_by[f"fold{i}"].extend(labels_non_human[test_idx].tolist())
         scores_by[f"fold{i}"].extend(scores_non_human[test_idx].tolist())
 
-    # 3. 
-    for i in range(1, k + 1):
+    # 3. Merge human and LLM samples for each fold
+    actual_folds = len(labels_by)  # May be less than k if fallback was used
+    for i in range(1, actual_folds + 1):
         labels_by[f"fold{i}"].extend(human_labels_by[f"fold{i}"])
         scores_by[f"fold{i}"].extend(human_scores_by[f"fold{i}"])
 
@@ -310,7 +341,7 @@ def split_pair_dicts_into_kfolds(labels_by: dict, scores_by: dict, k: int = 5,
 
 
 
-def compute_graph(labeles : dict, scores : dict, 
+def compute_graph(labels : dict, scores : dict, 
                   labels_by_llm : dict, scores_by_llm : dict,
                   labels_by_lang: dict, scores_by_lang: dict,
                   method: str = 'we', only_threshold: bool = False, opposite = False):
@@ -348,6 +379,9 @@ def compute_graph(labeles : dict, scores : dict,
             y_t = np.asarray(labels_by[k]).astype(int)
             y_s = np.asarray(scores_by[k], dtype=float)
             y_s = np.nan_to_num(y_s, nan=0.0)
+            # Apply opposite if needed (must match compute_metrics behavior)
+            if opposite:
+                y_s = 1 - y_s
             y_p = (y_s >= thr).astype(int)
             if y_t.size:
                 acc[k] = float(accuracy_score(y_t, y_p))
@@ -355,23 +389,19 @@ def compute_graph(labeles : dict, scores : dict,
 
 
 
-    # mean over langauge
-    labels_by_llm1 = labels_by_llm
-    scores_by_llm1 = scores_by_llm
-    labels_by_lang1 = labels_by_lang
-    scores_by_lang1 = scores_by_lang
-
-    #if len(labels_by_lang) == 1:
-    #    labels_by_lang, scores_by_lang = split_pair_dicts_into_kfolds(labels_by_lang, scores_by_lang, k=5, stratify=True)
-    m_f1, m_t10, m_t01, f1_err, t10_err, t01_err , m_thr_10, m_thr_1= _collect_metrics(labeles, scores)
+    # Compute metrics across folds
+    m_f1, m_t10, m_t01, f1_err, t10_err, t01_err , m_thr_10, m_thr_1= _collect_metrics(labels, scores)
 
     if only_threshold:
         return m_thr_10
-    acc_LLM = _acc_by(labels_by_llm1, scores_by_llm1, thr = m_thr_10)
-    acc_language = _acc_by(labels_by_lang1, scores_by_lang1, thr = m_thr_10)
+    
+    #if len(labels_by_lang) == 1:
+    #    labels_by_lang, scores_by_lang = split_pair_dicts_into_kfolds(labels_by_lang, scores_by_lang, k=5, stratify=True)
+    m_f1, m_t10, m_t01, f1_err, t10_err, t01_err , m_thr_10, m_thr_1= _collect_metrics(labels, scores)
 
-    acc_LLM_50 = _acc_by(labels_by_llm1, scores_by_llm1, thr = 0.5)
-    acc_language_50 = _acc_by(labels_by_lang1, scores_by_lang1, thr = 0.5)
+    # Compute accuracy with default 0.5 threshold
+    acc_LLM_50 = _acc_by(labels_by_llm, scores_by_llm, thr = 0.5)
+    acc_language_50 = _acc_by(labels_by_lang, scores_by_lang, thr = 0.5)
 
 
     # usa il tuo grafico esistente a 3 barre
@@ -386,6 +416,10 @@ def compute_graph(labeles : dict, scores : dict,
     with c2:
         if acc_language_50: st.bar_chart(pd.Series(acc_language_50).sort_values(ascending=False))
 
+    # Compute accuracy with FPR@10% threshold
+    acc_LLM = _acc_by(labels_by_llm, scores_by_llm, thr=m_thr_10)
+    acc_language = _acc_by(labels_by_lang, scores_by_lang, thr=m_thr_10)
+    
     st.text("Accuracy over LLM and Language (FPR@10%)")
     c1, c2 = st.columns(2)
     with c1:
@@ -439,5 +473,5 @@ def auto_compute(ds:Dataset, split_col:str="LLM", method = 'we', opposite=False)
     head()
     labels_by_llm,  scores_by_llm  = split_by(ds, split_col="LLM") # dict 
     labels_by_lang, scores_by_lang = split_by(ds, split_col="language") # dict 
-    labeles, scores = split_by_kfold(ds)
-    compute_graph(labeles, scores ,labels_by_llm, scores_by_llm, labels_by_lang, scores_by_lang, method=method, opposite=opposite)
+    labels, scores = split_by_kfold(ds)
+    compute_graph(labels, scores ,labels_by_llm, scores_by_llm, labels_by_lang, scores_by_lang, method=method, opposite=opposite)

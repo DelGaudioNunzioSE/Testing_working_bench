@@ -1,3 +1,15 @@
+"""Mamba Perplexity Calculator
+
+This implementation is adapted from the original llmppl repository:
+https://github.com/Arrtourz/llmppl
+
+License: MIT License
+Copyright (c) Arrtourz (original implementation)
+
+This module provides perplexity calculation using Mamba state space models
+as an efficient alternative to Transformer-based models.
+"""
+
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import math
@@ -38,7 +50,7 @@ class MambaPPL:
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             trust_remote_code=True,
-            torch_dtype=torch.float16 if self.device == 'cuda' else torch.float32
+            dtype=torch.float16 if self.device == 'cuda' else torch.float32
         ).to(self.device)
         
         self.model.eval()

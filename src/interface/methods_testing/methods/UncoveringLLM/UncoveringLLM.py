@@ -6,9 +6,7 @@ from pathlib import Path
 
 
 class Analyzer():
-    def __init__(self, code_conlum = 'cleared_code',
-                 tokenizer = "microsoft/graphcodebert-base", 
-                 LLM = None):
+    def __init__(self, code_conlum = 'cleared_code', tokenizer = "microsoft/graphcodebert-base", LLM = None):
         self.DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.code_conlum = code_conlum
